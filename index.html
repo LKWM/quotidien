@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le coréen au quotidien - Leçon 1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Nanum+Gothic', sans-serif;
+            overflow: hidden; /* 스크롤 방지 */
+        }
+        .course-container {
+            width: 100%;
+            max-width: 1000px;
+            /* 고정 높이 제거, h-full 클래스로 대체 */
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .quiz-option {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-option:hover {
+            transform: scale(1.03);
+            background-color: #f0f9ff; /* sky-50 */
+        }
+        .quiz-option input:checked + label {
+            background-color: #38bdf8; /* sky-400 */
+            color: white;
+            border-color: #0284c7; /* sky-600 */
+        }
+        /* .star-icon 제거 -> Tailwind 클래스로 대체 */
+    </style>
+</head>
+<!-- [수정] h-screen 추가로 body가 viewport 높이를 100% 차지하도록 함 -->
+<body class="bg-slate-100 flex items-center justify-center h-screen p-2 sm:p-4">
+
+    <!-- [수정] h-full 추가, p-8 -> p-4 sm:p-6 lg:p-8 로 패딩 축소 -->
+    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden h-full">
+        
+        <!-- 페이지 내용이 여기에 동적으로 표시됩니다 -->
+        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center">
+            
+            <!-- Page 0: Title -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 (모바일 우선) -->
+            <div id="page-0" class="page w-full h-full flex-col justify-center items-center">
+                <h1 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-slate-800 mb-2 sm:mb-4">Le coréen au quotidien</h1>
+                <div class="flex items-center text-yellow-400" aria-label="Difficulté: 0.5 sur 5">
+                    <p class="text-slate-600 mr-1 sm:mr-2 text-xs sm:text-base lg:text-lg">Difficulté :</p>
+                    <!-- [수정] w-h- (star-icon 클래스 제거) -->
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z M12 15.4V6.1l1.71 4.04 4.22.36-3.27 2.84 1 4.28L12 15.4z"></path></svg>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Page 1: Introduction -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-1" class="page w-full h-full flex-col justify-center items-center text-sm sm:text-lg lg:text-xl text-slate-700 leading-relaxed max-w-3xl">
+                <p>Ce cours est conçu pour ceux qui ont déjà appris le Hangeul et souhaitent apprendre des expressions coréennes de tous les jours avant de se plonger dans la grammaire complète.</p>
+                <p class="mt-2 sm:mt-4">Toute personne ayant terminé le cours <span class="font-semibold text-sky-600">"Bien Prononcer le coréen - Apprendre le Hangeul"</span> peut y participer.</p>
+            </div>
+
+            <!-- Page 2: Sentence Structure -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-2" class="page w-full h-full flex-col justify-center items-center text-base sm:text-xl lg:text-2xl text-slate-700">
+                <div class="w-full max-w-4xl">
+                    <p class="mb-4 sm:mb-8">En français, la phrase a une structure : <span class="font-bold">S (sujet)</span> + <span class="font-bold">V (verbe)</span> + <span class="font-bold">O (objet)</span>.</p>
+                    <p class="mb-2">Par contre,</p>
+                    <p>En coréen, la phrase a une structure : <span class="font-bold text-xl sm:text-2xl lg:text-3xl">S (sujet)</span> + <span class="font-bold text-xl sm:text-2xl lg:text-3xl">O (objet)</span> + <span class="font-bold text-xl sm:text-2xl lg:text-3xl">V (verbe)</span>.</p>
+                </div>
+            </div>
+
+            <!-- Page 3: S O V Details -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-3" class="page w-full h-full flex-col justify-center items-start text-sm sm:text-lg lg:text-xl max-w-3xl space-y-3 sm:space-y-4 lg:space-y-6">
+                <p><span class="font-bold text-red-600 text-2xl sm:text-3xl">S</span> : En coréen, le sujet n'est pas toujours nécessaire dans une phrase. Il est souvent omis.</p>
+                <p><span class="font-bold text-blue-600 text-2xl sm:text-3xl">O</span> : Cela inclut divers compléments, y compris le COI (Complément d'Objet Indirect) et le COD (Complément d'Objet Direct).</p>
+                <p><span class="font-bold text-green-600 text-2xl sm:text-3xl">V</span> : Dans la grammaire coréenne, on utilise le terme <span class="font-semibold">Prédicat</span> plutôt que Verbe. Le Prédicat inclut les Verbes et les Adjectifs.</p>
+            </div>
+
+            <!-- Page 4: Predicate -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-4" class="page w-full h-full flex-col justify-center items-center text-base sm:text-xl lg:text-2xl">
+                <p class="text-slate-400">S + O + <span class="font-bold text-green-600">V (Prédicat)</span></p>
+                <p class="mt-4 sm:mt-8 text-slate-700 max-w-2xl">On conjugue le <span class="font-bold text-green-600">Prédicat</span> pour exprimer le temps ou le niveau de politesse.</p>
+            </div>
+            
+            <!-- Page 5: Formal -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-5" class="page w-full h-full flex-col justify-center items-center text-sm sm:text-lg lg:text-xl max-w-3xl">
+                <p class="text-slate-700">Si une phrase se termine par <span class="font-bold bg-sky-100 px-1.5 py-0.5 sm:px-2 rounded text-sm sm:text-base">-다</span> ou <span class="font-bold bg-sky-100 px-1.5 py-0.5 sm:px-2 rounded text-sm sm:text-base">-까?</span>, cela signifie qu'il s'agit d'une <span class="font-bold text-sky-700">phrase formelle</span>.</p>
+                <p class="mt-3 sm:mt-6 text-slate-600">On utilise la phrase formelle dans des situations officielles ou en s'adressant à des personnes de rang supérieur.</p>
+            </div>
+
+            <!-- Page 6: Polite -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-6" class="page w-full h-full flex-col justify-center items-center text-sm sm:text-lg lg:text-xl max-w-3xl">
+                <p class="text-slate-700">Si une phrase se termine par <span class="font-bold bg-green-100 px-1.5 py-0.5 sm:px-2 rounded text-sm sm:text-base">-요</span>, cela signifie qu'il s'agit d'une <span class="font-bold text-green-700">phrase polie</span>.</p>
+                <p class="mt-3 sm:mt-6 text-slate-600">On peut utiliser la phrase polie dans la plupart des situations, formelles ou informelles, avec des personnes de même rang ou de rang inférieur.</p>
+            </div>
+
+            <!-- Page 7: Informal -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-7" class="page w-full h-full flex-col justify-center items-center text-sm sm:text-lg lg:text-xl max-w-3xl">
+                <p class="text-slate-700">Si une phrase n'a pas de terminaison spécifique, elle est <span class="font-bold text-amber-700">informelle</span>.</p>
+                <p class="mt-3 sm:mt-6 text-slate-600">On utilise la phrase informelle avec des personnes très proches, plus jeunes ou de rang inférieur.</p>
+            </div>
+            
+            <!-- Page 8: Quiz 1 -->
+            <!-- [수정] 텍스트, 여백, 버튼 크기 축소 -->
+            <div id="page-8" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-3 sm:mb-4 lg:mb-6">Quelle est la structure correcte d'une phrase coréenne ?</h2>
+                <form id="quiz-1" class="w-full max-w-md grid grid-cols-2 gap-2 sm:gap-4">
+                    <div class="quiz-option"><input type="radio" name="q1" value="SVO" id="q1a1" class="hidden"><label for="q1a1" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl font-mono">SVO</label></div>
+                    <div class="quiz-option"><input type="radio" name="q1" value="SOV" id="q1a2" class="hidden"><label for="q1a2" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl font-mono">SOV</label></div>
+                    <div class="quiz-option"><input type="radio" name="q1" value="VOS" id="q1a3" class="hidden"><label for="q1a3" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl font-mono">VOS</label></div>
+                    <div class="quiz-option"><input type="radio" name="q1" value="OSV" id="q1a4" class="hidden"><label for="q1a4" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl font-mono">OSV</label></div>
+                    <button type="submit" class="col-span-2 mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                </form>
+            </div>
+
+            <!-- Page 9: Quiz 2 -->
+            <!-- [수정] 텍스트, 여백, 버튼 크기 축소 -->
+            <div id="page-9" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-3 sm:mb-4 lg:mb-6">Comment se termine une <span class="text-sky-700">phrase formelle</span> ?</h2>
+                <form id="quiz-2" class="w-full max-w-md grid grid-cols-2 gap-2 sm:gap-4">
+                    <div class="quiz-option"><input type="checkbox" name="q2" value="-da" id="q2a1" class="hidden"><label for="q2a1" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-다</label></div>
+                    <div class="quiz-option"><input type="checkbox" name="q2" value="-kka" id="q2a2" class="hidden"><label for="q2a2" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-까?</label></div>
+                    <div class="quiz-option"><input type="checkbox" name="q2" value="-yo" id="q2a3" class="hidden"><label for="q2a3" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-요</label></div>
+                    <div class="quiz-option"><input type="checkbox" name="q2" value="none" id="q2a4" class="hidden"><label for="q2a4" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">Terminaison spéciale absente</label></div>
+                    <button type="submit" class="col-span-2 mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                </form>
+            </div>
+
+            <!-- Page 10: Quiz 3 -->
+            <!-- [수정] 텍스트, 여백, 버튼 크기 축소 -->
+            <div id="page-10" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-3 sm:mb-4 lg:mb-6">Comment se termine une <span class="text-green-700">phrase polie</span> ?</h2>
+                <form id="quiz-3" class="w-full max-w-md grid grid-cols-2 gap-2 sm:gap-4">
+                    <div class="quiz-option"><input type="radio" name="q3" value="-da" id="q3a1" class="hidden"><label for="q3a1" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-다</label></div>
+                    <div class="quiz-option"><input type="radio" name="q3" value="-kka" id="q3a2" class="hidden"><label for="q3a2" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-까?</label></div>
+                    <div class="quiz-option"><input type="radio" name="q3" value="-yo" id="q3a3" class="hidden"><label for="q3a3" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-요</label></div>
+                    <div class="quiz-option"><input type="radio" name="q3" value="none" id="q3a4" class="hidden"><label for="q3a4" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">Terminaison spéciale absente</label></div>
+                    <button type="submit" class="col-span-2 mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                </form>
+            </div>
+
+            <!-- Page 11: Quiz 4 -->
+            <!-- [수정] 텍스트, 여백, 버튼 크기 축소 -->
+            <div id="page-11" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-3 sm:mb-4 lg:mb-6">Comment se termine une <span class="text-amber-700">phrase informelle</span> ?</h2>
+                <form id="quiz-4" class="w-full max-w-md grid grid-cols-2 gap-2 sm:gap-4">
+                    <div class="quiz-option"><input type="radio" name="q4" value="-da" id="q4a1" class="hidden"><label for="q4a1" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-다</label></div>
+                    <div class="quiz-option"><input type="radio" name="q4" value="-kka" id="q4a2" class="hidden"><label for="q4a2" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-까?</label></div>
+                    <div class="quiz-option"><input type="radio" name="q4" value="-yo" id="q4a3" class="hidden"><label for="q4a3" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">-요</label></div>
+                    <div class="quiz-option"><input type="radio" name="q4" value="none" id="q4a4" class="hidden"><label for="q4a4" class="block cursor-pointer p-2 sm:p-3 lg:p-4 border-2 border-slate-200 rounded-lg text-sm sm:text-lg lg:text-xl">Terminaison spéciale absente</label></div>
+                    <button type="submit" class="col-span-2 mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                </form>
+            </div>
+
+            <!-- Page 12: End -->
+            <!-- [수정] 텍스트 및 여백 크기 축소 -->
+            <div id="page-12" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800">수고하셨습니다!</h2>
+                <p class="text-sm sm:text-lg lg:text-xl text-slate-600 mt-2 sm:mt-4">Félicitations ! Apprenons notre première phrase à l'étape suivante !</p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <!-- [수정] 위치, 패딩, 버튼 크기 축소 -->
+        <div class="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-0 right-0 px-4 sm:px-8 flex justify-between items-center">
+            <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+            <div id="progress-bar" class="w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
+            </div>
+            <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
+        </div>
+    </div>
+
+    <!-- Modal for quiz feedback -->
+    <!-- [수정] 패딩, 텍스트, 버튼 크기 축소 -->
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+        <div class="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg text-center">
+            <p id="modal-text" class="text-base sm:text-lg mb-4"></p>
+            <button id="modal-close-btn" class="bg-sky-500 text-white font-bold py-1.5 px-4 text-sm sm:text-base rounded-lg hover:bg-sky-600">Réessayer</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 초기 설정 ---
+            const totalPages = 13;
+            let currentPageIndex = 0;
+            let soundsReady = false;
+
+            const pages = document.querySelectorAll('.page');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressBar = document.getElementById('progress-indicator');
+            const feedbackModal = document.getElementById('feedback-modal');
+            const modalText = document.getElementById('modal-text');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            // --- 사운드 설정 (Tone.js) ---
+            let correctSound, wrongSound, pageTurnSound, finishSound;
+
+            // 사용자가 상호작용을 시작하면 오디오 컨텍스트를 활성화합니다.
+            const initAudio = async () => {
+                if (soundsReady) return;
+                // Tone.start()는 사용자 상호작용에 의해 호출되어야 함
+                try {
+                    await Tone.start();
+                    
+                    correctSound = new Tone.Synth({
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
+                    }).toDestination();
+
+                    wrongSound = new Tone.Synth({
+                        oscillator: { type: 'triangle' },
+                        envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.2 }
+                    }).toDestination();
+
+                    // [수정 1] 페이지 넘김 효과음을 더 밝은 톤으로 변경 (기존 코드)
+                    pageTurnSound = new Tone.Synth({
+                        oscillator: { type: 'sine' },
+                        envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }
+                    }).toDestination();
+                    
+                    finishSound = new Tone.PolySynth(Tone.Synth, {
+                        envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 1 }
+                    }).toDestination();
+
+                    soundsReady = true;
+                    console.log('Audio context started and sounds are ready.');
+                } catch (e) {
+                    console.error("Audio context could not be started: ", e);
+                }
+            };
+            
+            // --- 페이지 관리 ---
+            const showPage = (index) => {
+                pages.forEach((page, i) => {
+                    page.classList.toggle('active', i === index);
+                });
+                updateNavigation(index);
+                updateProgressBar(index);
+
+                // [수정] 마지막 페이지 도달 시 완료 사운드 재생 및 postMessage 전송
+                if (index === totalPages - 1) {
+                    // [요청 사항] 부모 페이지에 완료 메시지 전송
+                    window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                    console.log('Lesson complete message sent to parent.');
+
+                    if (soundsReady) {
+                        finishSound.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '0.5s');
+                    }
+                }
+            };
+
+            const updateNavigation = (index) => {
+                prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+                
+                const currentPage = pages[index];
+                const isQuizPage = currentPage.querySelector('form') !== null;
+                const isQuizAnswered = currentPage.querySelector('.success-message') !== null;
+
+                if (isQuizPage && !isQuizAnswered) {
+                    nextBtn.style.visibility = 'hidden';
+                } else {
+                    nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+                }
+            };
+
+            const updateProgressBar = (index) => {
+                const progress = ((index + 1) / totalPages) * 100;
+                progressBar.style.width = `${progress}%`;
+            };
+            
+            // --- 이벤트 리스너 ---
+            nextBtn.addEventListener('click', async () => {
+                await initAudio();
+                if (currentPageIndex < totalPages - 1) {
+                    currentPageIndex++;
+                    if (soundsReady) pageTurnSound.triggerAttackRelease('A5', '0.05s'); // 밝은 효과음 재생
+                    showPage(currentPageIndex);
+                }
+            });
+
+            prevBtn.addEventListener('click', async () => {
+                await initAudio();
+                
+                // [수정 2] 뒤로 가기 전 현재 페이지가 퀴즈 정답 페이지라면 리셋 (기존 코드)
+                const currentPage = pages[currentPageIndex];
+                const form = currentPage.querySelector('form');
+                const successMessage = currentPage.querySelector('.success-message');
+
+                if (form && successMessage) {
+                    successMessage.remove(); // "Correct!" 메시지 삭제
+                    form.style.display = 'grid'; // 폼 다시 보이기
+                    form.reset(); // 선택된 값 리셋
+                }
+
+                if (currentPageIndex > 0) {
+                    currentPageIndex--;
+                    if (soundsReady) pageTurnSound.triggerAttackRelease('A5', '0.05s'); // 밝은 효과음 재생
+                    showPage(currentPageIndex);
+                }
+            });
+            
+            // --- 퀴즈 로직 ---
+            const quizzes = [
+                { id: 'quiz-1', type: 'radio', answer: 'SOV' },
+                { id: 'quiz-2', type: 'checkbox', answer: ['-da', '-kka'] },
+                { id: 'quiz-3', type: 'radio', answer: '-yo' },
+                { id: 'quiz-4', type: 'radio', answer: 'none' }
+            ];
+
+            quizzes.forEach(quizInfo => {
+                const form = document.getElementById(quizInfo.id);
+                if (!form) return;
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await initAudio();
+
+                    let isCorrect = false;
+                    if (quizInfo.type === 'radio') {
+                        const formData = new FormData(form);
+                        const userAnswer = formData.get(form.querySelector('input').name);
+                        isCorrect = userAnswer === quizInfo.answer;
+                    } else if (quizInfo.type === 'checkbox') {
+                        const checked = Array.from(form.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+                        const answerSet = new Set(quizInfo.answer);
+                        const userSet = new Set(checked);
+                        
+                        isCorrect = answerSet.size === userSet.size && [...answerSet].every(val => userSet.has(val));
+
+                        if (!isCorrect && checked.length > 0 && checked.every(val => answerSet.has(val))) {
+                            showModal('Veuillez sélectionner toutes les bonnes réponses.');
+                            if (soundsReady) wrongSound.triggerAttackRelease('A#2', '0.2s');
+                            return;
+                        }
+                    }
+
+                    if (isCorrect) {
+                        if (soundsReady) correctSound.triggerAttackRelease('C5', '0.2s');
+                        form.style.display = 'none';
+                        const successMessage = document.createElement('p');
+                        successMessage.textContent = 'Correct !';
+                        // [수정 2] 나중에 찾기 쉽도록 클래스 추가 (기존 코드)
+                        // [수정] 텍스트 크기 반응형으로
+                        successMessage.className = 'text-lg sm:text-2xl font-bold text-green-500 success-message';
+                        form.parentElement.appendChild(successMessage);
+                        nextBtn.style.visibility = 'visible';
+                    } else {
+                        if (soundsReady) wrongSound.triggerAttackRelease('A#2', '0.2s');
+                        showModal('Ce n\'est pas correct. Essayez encore !');
+                    }
+                });
+            });
+
+            // --- 모달 관리 ---
+            const showModal = (message) => {
+                modalText.textContent = message;
+                feedbackModal.classList.remove('hidden');
+            };
+
+            modalCloseBtn.addEventListener('click', () => {
+                feedbackModal.classList.add('hidden');
+            });
+            
+            // --- 초기화 ---
+            showPage(currentPageIndex);
+            
+            // 사용자의 첫 클릭/터치로 오디오 컨텍스트 활성화 시도
+            document.body.addEventListener('click', initAudio, { once: true });
+            document.body.addEventListener('touchstart', initAudio, { once: true });
+        });
+    </script>
+</body>
+</html>
