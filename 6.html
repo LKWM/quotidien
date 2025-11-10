@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le coréen au quotidien - Leçon 6: Au revoir (en partant)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Nanum Gothic', sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        /* [수정] 고정 크기, transform 관련 속성 모두 제거 */
+        .course-container {
+            width: 100%;
+            max-width: 1000px;
+            /* height: 600px; -> h-full 클래스로 대체 */
+            /* transform-origin: center; */
+            /* transition: transform 0.2s ease-out; */
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .interactive-card {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .interactive-card:hover {
+            transform: scale(1.03); /* hover 효과는 유지 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        /* [수정] 모바일 크기에 맞게 축소 (반응형) */
+        .audio-hint-btn {
+            flex-shrink: 0;
+            background-color: #dbeafe;
+            color: #2563eb;
+            border-radius: 9999px;
+            width: 32px; /* 44px -> 32px */
+            height: 32px; /* 44px -> 32px */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        /* [수정] sm: 이상일 때만 원래 크기 */
+        @media (min-width: 640px) {
+            .audio-hint-btn {
+                width: 44px;
+                height: 44px;
+            }
+        }
+        .audio-hint-btn:hover {
+            background-color: #bfdbfe;
+        }
+        .quiz-option input:checked + label {
+            background-color: #38bdf8;
+            color: white;
+            border-color: #0284c7;
+        }
+        /* [수정] 키보드 갭, 패딩 축소 */
+        .keyboard {
+            display: grid;
+            gap: 2px; /* 4px -> 2px */
+            padding: 4px; /* 8px -> 4px */
+            background-color: #e5e7eb;
+            border-radius: 8px;
+        }
+        .keyboard-row {
+            display: grid;
+            grid-auto-flow: column;
+            gap: 2px; /* 4px -> 2px */
+        }
+        .key {
+            font-family: 'Nanum Gothic', sans-serif;
+            font-weight: 700;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 4px 6px; /* 8px 12px -> 4px 6px */
+            font-size: 0.875rem; /* 14px */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        /* [수정] sm: 이상일 때 패딩 증가 */
+        @media (min-width: 640px) {
+            .keyboard { gap: 4px; padding: 8px; }
+            .keyboard-row { gap: 4px; }
+            .key { padding: 8px 12px; font-size: 1rem; }
+        }
+        .key:hover { background-color: #f3f4f6; }
+        .key:active { background-color: #d1d5db; }
+        /* [수정] 박스 최소 높이 축소 */
+        .order-answer-box {
+            min-height: 50px; /* 80px -> 50px */
+            border: 2px dashed #9ca3af;
+            background-color: #f9fafb;
+        }
+        /* [수정] 카드 폰트, 패딩 축소 (Tailwind로 대체) */
+        .order-option-card, .order-answer-card {
+            /* font-size: 1.5rem; */ /* -> Tailwind text- 클래스로 대체 */
+            font-weight: 700;
+            /* padding: 1rem; */ /* -> Tailwind p- 클래스로 대체 */
+            border-radius: 0.5rem;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+        }
+        /* [수정] 피드백 메시지 높이 축소 */
+        .feedback-message {
+            height: 1.5rem; /* 2rem -> 1.5rem */
+            font-weight: bold;
+            margin-top: 0.5rem; /* 1rem -> 0.5rem */
+        }
+        /* [수정] 인풋 컨테이너 패딩 축소 */
+        .quiz-input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem; /* 1rem -> 0.5rem */
+            width: 100%;
+            max-width: 95%; /* 90% -> 95% */
+            background-color: #f3f4f6;
+            padding: 0.5rem; /* 1rem -> 0.5rem */
+            border-radius: 0.75rem;
+        }
+        /* [수정] 인풋 래퍼 폰트 크기 축소 (반응형) */
+        .quiz-input-wrapper {
+            font-size: 1.5rem; /* 36px -> 24px */
+            line-height: 2rem; /* 40px -> 32px */
+            font-weight: 700;
+            flex-grow: 1;
+            text-align: center;
+        }
+        @media (min-width: 640px) {
+            .quiz-input-wrapper {
+                font-size: 2.25rem;
+                line-height: 2.5rem;
+            }
+        }
+        .quiz-input {
+            color: #2563eb;
+            border-bottom: 3px solid #3b82f6; /* 4px -> 3px */
+            min-height: 32px; /* 48px -> 32px */
+            display: inline-block;
+        }
+        .prefilled-text {
+            color: #4b5563;
+        }
+    </style>
+</head>
+<!-- [수정] h-screen 추가, p-4 -> p-2 sm:p-4 로 패딩 축소 -->
+<body class="bg-slate-100 flex items-center justify-center min-h-screen h-screen p-2 sm:p-4">
+
+    <!-- [수정] h-full 추가, p-8 -> p-4 sm:p-6 lg:p-8 로 패딩 축소 -->
+    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden h-full">
+        
+        <!-- Audio elements -->
+        <!-- New sounds for this lesson -->
+        <audio id="audio-annyeonghi-gaseyo" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gaseyo-fast" src="https://static.wixstatic.com/mp3/699687_9f33297bef6e4b4e91044f3969eebd63.mp3" preload="auto"></audio>
+        <audio id="audio-gaseyo" src="https://static.wixstatic.com/mp3/699687_fe6ef4d015bb4b3cbc6cc74797139a82.mp3" preload="auto"></audio>
+        <audio id="audio-ga" src="https://static.wixstatic.com/mp3/699687_9dfb39b123834dfc8f2ad96ddec7df76.mp3" preload="auto"></audio>
+        <audio id="audio-partez-bien" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio> <!-- Mapped to annyeonghi-gaseyo -->
+        <audio id="audio-restez-bien" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio> <!-- Mapped to annyeonghi-gyeseyo -->
+
+        <!-- Sounds from previous lessons (for review) -->
+        <audio id="audio-joesonghamnida" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
+        <audio id="audio-desole" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
+        <audio id="audio-bonjour" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
+        <audio id="audio-merci" src="https://static.wixstatic.com/mp3/699687_cbf26bae6c624aeabbe85140522122c7.mp3" preload="auto"></audio>
+        <audio id="audio-annyeong" src="https://static.wixstatic.com/mp3/699687_cd140b35b9ce43aa9b88ccd5c6be5fdf.mp3" preload="auto"></audio>
+        <audio id="audio-haseyo" src="https://static.wixstatic.com/mp3/699687_a23595932d8945a49d2689a3f538fdc9.mp3" preload="auto"></audio>
+        <audio id="audio-haeyo" src="https://static.wixstatic.com/mp3/699687_6b90a1b381da4609bd1dbc60566b9093.mp3" preload="auto"></audio>
+        <audio id="audio-hae" src="https://static.wixstatic.com/mp3/699687_a0f34fda671440c2b8861c920feb91ae.mp3" preload="auto"></audio>
+        <audio id="audio-gamsa" src="https://static.wixstatic.com/mp3/699687_7f67a54b7706491f9f7c591927c3e7c6.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghaseyo" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
+        <audio id="audio-gamsahamnida" src="https://static.wixstatic.com/mp3/699687_cbf26bae6c624aeabbe85140522122c7.mp3" preload="auto"></audio>
+        <audio id="audio-joe" src="https://static.wixstatic.com/mp3/699687_6e9892fe87da4f89adeb32563f07b5fb.mp3" preload="auto"></audio>
+        <audio id="audio-song" src="https://static.wixstatic.com/mp3/699687_05d7edc14c914ccf8946c45d2bd8ab09.mp3" preload="auto"></audio>
+        <audio id="audio-hap" src="https://static.wixstatic.com/mp3/699687_faa104c0b2474908a9f5d21fc44631ed.mp3" preload="auto"></audio>
+        <audio id="audio-ni" src="https://static.wixstatic.com/mp3/699687_8ad286c1b292465983529b464b024146.mp3" preload="auto"></audio>
+        <audio id="audio-da" src="https://static.wixstatic.com/mp3/699687_0bdad4f5a6ce461ebc4adf1bddf51498.mp3" preload="auto"></audio>
+        <audio id="audio-an" src="https://static.wixstatic.com/mp3/699687_e1dd2a0576b0424cbfe64d4c75c84162.mp3" preload="auto"></audio>
+        <audio id="audio-nyeong" src="https://static.wixstatic.com/mp3/699687_c7d231f8a10b46e0acc1bbb68a3455d7.mp3" preload="auto"></audio>
+        <audio id="audio-se" src="https://static.wixstatic.com/mp3/699687_6ecec239c8d044c4a39cd6e91805f4b1.mp3" preload="auto"></audio>
+        <audio id="audio-yo" src="https://static.wixstatic.com/mp3/699687_311e7d2a0a76423b8c58747cc5dcf4f6.mp3" preload="auto"></audio>
+        <audio id="audio-hi" src="https://static.wixstatic.com/mp3/699687_c80b2797bb95449484670f900eecad6c.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi" src="https://static.wixstatic.com/mp3/699687_a5b48c52e580453897f188a8006b3acf.mp3" preload="auto"></audio>
+        <audio id="audio-gye" src="https://static.wixstatic.com/mp3/699687_722d97e13ce94e6bb0e359b2e47f00dc.mp3" preload="auto"></audio>
+        <audio id="audio-gyeseyo" src="https://static.wixstatic.com/mp3/699687_0e59a55005054289831ef5dfdc4c0b65.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gyeseyo" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio>
+        <audio id="audio-gam" src="https://static.wixstatic.com/mp3/699687_6b6cae3747684bb799f41099172aa97d.mp3" preload="auto"></audio>
+        <audio id="audio-sa" src="https://static.wixstatic.com/mp3/699687_43644e63ec854f52b8a350f7ed47ad1d.mp3" preload="auto"></audio>
+        <audio id="audio-ha" src="https://static.wixstatic.com/mp3/699687_8e463144ce3b427aa6cb2fce03b662bd.mp3" preload="auto"></audio>
+
+        <!-- Page content will be dynamically displayed here -->
+        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center overflow-auto">
+            
+            <!-- Page 0: Title -->
+            <!-- [수정] flex-col md:flex-row 로 모바일 스택, 텍스트/이미지 크기 축소 -->
+            <div id="page-0" class="page w-full h-full flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
+                <div class="flex flex-col items-center">
+                    <button data-audio="annyeonghi-gaseyo" class="interactive-card text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-800 mb-2 bg-sky-100 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl">안녕히 가세요</button>
+                    <p class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-sky-600 mt-1 sm:mt-2">Au revoir !</p>
+                </div>
+                <img src="https://static.wixstatic.com/media/699687_3484157f18d24d0a848c87ee7a14d55d~mv2.png" 
+                     alt="Illustration of a person leaving" 
+                     class="w-24 h-24 sm:w-36 sm:h-36 md:w-64 md:h-64 object-contain"
+                     onerror="this.style.display='none'">
+            </div>
+
+            <!-- Page 1: Explanation -->
+            <!-- [수정] 텍스트 크기 축소 (반응형) -->
+            <div id="page-1" class="page w-full h-full flex-col justify-center items-center text-base sm:text-lg lg:text-xl text-slate-700 leading-relaxed max-w-4xl">
+                 <p class="mb-4 sm:mb-6 text-lg sm:text-xl lg:text-2xl">"<span class="font-bold text-sky-600 text-xl sm:text-2xl lg:text-3xl">안녕히 가세요</span>" est une salutation de départ, équivalente à "<span class="font-bold">Au revoir</span>", "<span class="font-bold">Partez bien</span>" ou "<span class="font-bold">Bon voyage</span>".</p>
+                 <p class="mb-4 sm:mb-8 text-lg sm:text-xl lg:text-2xl">C'est une salutation que la personne qui reste adresse à celle qui part.</p>
+                 <div class="flex items-center justify-center space-x-2 text-lg sm:text-3xl">
+                       <div class="text-center p-2 sm:p-3 bg-amber-100 rounded-lg">
+                           <p class="font-bold text-amber-800">안녕히</p>
+                           <p class="text-sm sm:text-lg text-amber-600 mt-1">Bien, en paix</p>
+                       </div>
+                       <p class="text-xl sm:text-4xl">+</p>
+                       <div class="text-center p-2 sm:p-3 bg-teal-100 rounded-lg">
+                           <p class="font-bold text-teal-800">가</p>
+                           <p class="text-sm sm:text-lg text-teal-600 mt-1">Radical de 가다 (aller)</p>
+                       </div>
+                       <p class="text-xl sm:text-4xl">+</p>
+                       <div class="text-center p-2 sm:p-3 bg-indigo-100 rounded-lg">
+                           <p class="font-bold text-indigo-800">세요</p>
+                           <p class="text-sm sm:text-lg text-indigo-600 mt-1">Terminaison impérative polie</p>
+                       </div>
+                 </div>
+            </div>
+
+            <!-- Page 2: Syllable practice -->
+            <!-- [수정] 텍스트, 갭, 패딩 축소 (반응형) -->
+            <div id="page-2" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-800 mb-4 sm:mb-8">Répétez chaque syllabe.</h2>
+                <div class="flex justify-center items-center gap-1 sm:gap-2 md:gap-4">
+                    <button data-audio="an" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">안</button>
+                    <button data-audio="nyeong" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">녕</button>
+                    <button data-audio="hi" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">히</button>
+                    <div class="w-4 sm:w-8"></div>
+                    <button data-audio="ga" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">가</button>
+                    <button data-audio="se" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">세</button>
+                    <button data-audio="yo" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">요</button>
+                </div>
+            </div>
+
+            <!-- Page 3: Read together -->
+            <!-- [수정] 텍스트 크기 축소 (반응형) -->
+            <div id="page-3" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-800 mb-4 sm:mb-8">Maintenant, lisez tout en une fois.</h2>
+                <button data-audio="annyeonghi-gaseyo" class="interactive-card text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl">안녕히 가세요</button>
+            </div>
+
+            <!-- Page 4: Pronunciation tip 1 -->
+            <!-- [수정] 텍스트 크기 축소 (반응형) -->
+            <div id="page-4" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-3xl font-semibold text-slate-800 mb-4 sm:mb-8 max-w-2xl">Cette phrase est composée de deux mots, il y a donc un espace entre <안녕히> et <가세요>. Vous pouvez également marquer une légère pause en parlant.</h2>
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <button data-audio="annyeonghi" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-amber-700 p-2 sm:p-4 bg-amber-100 rounded-xl">안녕히</button>
+                    <button data-audio="gaseyo" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-teal-700 p-2 sm:p-4 bg-teal-100 rounded-xl">가세요</button>
+                </div>
+            </div>
+
+            <!-- Page 5: Pronunciation tip 2 -->
+            <!-- [수정] 텍스트 크기 축소 (반응형) -->
+            <div id="page-5" class="page w-full h-full flex-col justify-center items-center text-base sm:text-lg lg:text-xl max-w-3xl">
+                <p class="mb-4 sm:mb-6">Les Coréens le prononcent rapidement, comme un seul mot. Dans ce cas, le son 'ㅎ' de '히' peut devenir presque inaudible, sonnant comme '안녕이 가세요', et l'espacement entre les mots peut également ne pas être clairement entendu.</p>
+                <button data-audio="annyeonghi-gaseyo-fast" class="interactive-card text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl">안녕히 가세요</button>
+            </div>
+
+            <!-- Page 6: Quiz 1 -->
+            <!-- [수정] 텍스트, 패딩, 버튼 크기 축소 (반응형) -->
+            <div id="page-6" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4 sm:mb-6 text-center">Comment dit-on <button data-audio="annyeonghi-gaseyo" class="text-sky-600 font-bold hover:underline">"Au revoir"</button> en coréen (quand on reste) ?</h2>
+                <form id="quiz-1" class="w-full max-w-md">
+                    <div class="space-y-2 sm:space-y-4">
+                        <div class="quiz-option"><input type="radio" name="q1" value="안녕하세요" id="q1a1" class="hidden"><label for="q1a1" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">안녕하세요</label></div>
+                        <div class="quiz-option"><input type="radio" name="q1" value="안녕히 가세요" id="q1a2" class="hidden"><label for="q1a2" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">안녕히 가세요</label></div>
+                        <div class="quiz-option"><input type="radio" name="q1" value="감사합니다" id="q1a3" class="hidden"><label for="q1a3" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">감사합니다</label></div>
+                        <div class="quiz-option"><input type="radio" name="q1" value="죄송합니다" id="q1a4" class="hidden"><label for="q1a4" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">죄송합니다</label></div>
+                    </div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 transition-colors text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            
+            <!-- Page 7: Quiz 2 (Review) -->
+            <!-- [수정] 텍스트, 패딩, 버튼 크기 축소 (반응형) -->
+            <div id="page-7" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4 sm:mb-6">Comment dit-on <button data-audio="desole" class="text-sky-600 font-bold hover:underline">"Désolé"</button> en coréen ?</h2>
+                <form id="quiz-2" class="w-full max-w-md">
+                    <div class="space-y-2 sm:space-y-4">
+                        <div class="quiz-option"><input type="radio" name="q2" value="죄송합니다" id="q2a1" class="hidden"><label for="q2a1" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">죄송합니다</label></div>
+                        <div class="quiz-option"><input type="radio" name="q2" value="안녕히 계세요" id="q2a2" class="hidden"><label for="q2a2" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">안녕히 계세요</label></div>
+                    </div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 transition-colors text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+
+            <!-- Page 8: Quiz 3 (Ordering) -->
+            <!-- [수정] 텍스트, 패딩, 버튼 크기 축소 (반응형) -->
+            <div id="page-8" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en cliquant sur les cartes.</h2>
+                <form id="quiz-3" class="w-full max-w-lg">
+                    <div id="q3-answer-box" class="order-answer-box w-full p-2 sm:p-4 mb-4 rounded-lg flex items-center justify-center gap-2"></div>
+                    <div class="flex justify-center items-center gap-2">
+                        <div id="q3-options" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3">
+                            <!-- Options will be injected by JS -->
+                        </div>
+                        <button type="button" data-quiz-id="3" class="backspace-btn text-lg sm:text-2xl bg-slate-300 text-slate-700 font-bold p-2 sm:p-3 rounded-lg hover:bg-slate-400">←</button>
+                    </div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            
+            <!-- Page 9: Quiz 4 (Ordering Review) -->
+            <!-- [수정] 텍스트, 패딩, 버튼 크기 축소 (반응형) -->
+            <div id="page-9" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en ordonnant les syllabes.</h2>
+                <form id="quiz-4" class="w-full max-w-2xl">
+                    <div id="q4-answer-box" class="order-answer-box w-full p-2 sm:p-4 mb-4 rounded-lg flex items-center justify-center gap-2 text-lg sm:text-3xl"></div>
+                    <div class="flex justify-center items-center gap-2">
+                        <div id="q4-options" class="flex justify-center items-center flex-wrap gap-2">
+                            <!-- Options will be injected by JS -->
+                        </div>
+                        <button type="button" data-quiz-id="4" class="backspace-btn text-lg sm:text-2xl bg-slate-300 text-slate-700 font-bold p-2 sm:p-3 rounded-lg hover:bg-slate-400">←</button>
+                    </div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+
+            <!-- Page 10: Quiz 5 (Ordering Review) -->
+            <!-- [수정] 텍스트, 패딩, 버튼 크기 축소 (반응형) -->
+            <div id="page-10" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="bonjour" class="text-sky-600 font-bold hover:underline">"Bonjour"</button> en ordonnant les syllabes.</h2>
+                <form id="quiz-5" class="w-full max-w-2xl">
+                    <div id="q5-answer-box" class="order-answer-box w-full p-2 sm:p-4 mb-4 rounded-lg flex items-center justify-center gap-2 text-lg sm:text-3xl"></div>
+                    <div class="flex justify-center items-center gap-2">
+                        <div id="q5-options" class="flex justify-center items-center flex-wrap gap-2">
+                            <!-- Options will be injected by JS -->
+                        </div>
+                        <button type="button" data-quiz-id="5" class="backspace-btn text-lg sm:text-2xl bg-slate-300 text-slate-700 font-bold p-2 sm:p-3 rounded-lg hover:bg-slate-400">←</button>
+                    </div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            
+            <!-- Page 11: Keyboard Quiz (Review) -->
+            <!-- [수정] 텍스트, 버튼 크기 축소 (반응형) -->
+            <div id="page-11" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-6" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="desole" class="text-sky-600 font-bold hover:underline">"Désolé"</button> en utilisant le clavier coréen.</h2>
+                    <div class="quiz-input-container">
+                        <button type="button" data-audio="desole" class="audio-hint-btn">
+                            <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="6" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="6"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 12: Keyboard Quiz -->
+            <div id="page-12" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-7" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="restez-bien" class="text-sky-600 font-bold hover:underline">"Restez bien"</button> en utilisant le clavier coréen.</h2>
+                    <div class="quiz-input-container">
+                        <button type="button" data-audio="restez-bien" class="audio-hint-btn">
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="7" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="7"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 13: Keyboard Quiz -->
+            <div id="page-13" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-8" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en utilisant le clavier coréen.</h2>
+                      <div class="quiz-input-container">
+                        <button type="button" data-audio="merci" class="audio-hint-btn">
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="8" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="8"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 14: Keyboard Quiz -->
+            <div id="page-14" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-9" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                      <div class="quiz-input-container">
+                        <button type="button" data-audio="partez-bien" class="audio-hint-btn">
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="9" style="min-width: 6rem; sm:min-width: 9rem;"></span><span class="prefilled-text"> 가세요</span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="9"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 15: Keyboard Quiz -->
+            <div id="page-15" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-10" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                      <div class="quiz-input-container">
+                        <button type="button" data-audio="partez-bien" class="audio-hint-btn">
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="quiz-input-wrapper">
+                            <span class="prefilled-text">안녕히 </span><span class="quiz-input" data-quiz-id="10" style="min-width: 6rem; sm:min-width: 9rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="10"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 16: Keyboard Quiz -->
+            <div id="page-16" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-11" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                      <div class="quiz-input-container">
+                        <button type="button" data-audio="partez-bien" class="audio-hint-btn">
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="11" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="11"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 17: Final Keyboard Quiz -->
+            <div id="page-17" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-12" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Merci, partez bien." en utilisant le clavier.</h2>
+                      <div class="quiz-input-container">
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="12" style="min-width: 12rem; sm:min-width: 15rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="12"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 18: Final Keyboard Quiz 2 -->
+            <div id="page-18" class="page w-full h-full flex-col justify-center items-center">
+                 <form id="quiz-13" class="w-full max-w-xl flex flex-col items-center">
+                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Désolé. Restez bien." en utilisant le clavier.</h2>
+                      <div class="quiz-input-container">
+                        <div class="quiz-input-wrapper">
+                            <span class="quiz-input" data-quiz-id="13" style="min-width: 12rem; sm:min-width: 15rem;"></span>
+                        </div>
+                    </div>
+                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="13"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                </form>
+            </div>
+            <!-- Page 19: End -->
+            <!-- [수정] 텍스트 크기 축소 (반응형) -->
+            <div id="page-19" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800">수고하셨습니다!</h2>
+                <p class="text-base sm:text-lg lg:text-xl text-slate-600 mt-2 sm:mt-4">Félicitations ! Vous avez appris une nouvelle façon de dire au revoir !</p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <!-- [수정] bottom, px, 버튼 py/px/text-size 축소 (반응형) 및 레이아웃 수정 -->
+        <div class="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-0 right-0 px-4 sm:px-8 flex justify-between items-center">
+            <!-- Left button -->
+            <div>
+                <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
+                <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
+            </div>
+            
+            <!-- Right buttons -->
+            <div class="flex gap-2">
+                <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
+                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- [삭제] Layout Scaling ---
+        // const courseContainer = document.getElementById('course-container');
+        // const scaleLayout = () => { ... };
+        // window.addEventListener('resize', scaleLayout);
+        // scaleLayout();
+        // --- [끝] ---
+
+        // --- Basic Setup ---
+        const totalPages = 20; // 0-19
+        let currentPageIndex = 0;
+        let soundsReady = false;
+
+        const pages = document.querySelectorAll('.page');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const progressBar = document.getElementById('progress-indicator');
+
+        // --- Sound Setup ---
+        let correctSound, wrongSound, pageTurnSound, finishSound;
+        const initAudio = async () => {
+            if (soundsReady) return;
+            try {
+                await Tone.start();
+                correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
+                wrongSound = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.2 } }).toDestination();
+                pageTurnSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+                finishSound = new Tone.PolySynth(Tone.Synth, { envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 1 } }).toDestination();
+                soundsReady = true;
+                console.log('Audio context started.');
+            } catch (e) {
+                console.error("Audio context could not be started: ", e);
+            }
+        };
+        
+        // --- Audio Player & Mapping ---
+        const hangulToAudioId = {
+            '안녕히 가세요': 'annyeonghi-gaseyo', '가세요': 'gaseyo', '가': 'ga',
+            '안녕히 계세요': 'annyeonghi-gyeseyo', '계세요': 'gyeseyo', 
+            '안녕히': 'annyeonghi', '안녕': 'annyeong',
+            '안': 'an', '녕': 'nyeong', '히': 'hi', '계': 'gye', '세': 'se', '요': 'yo',
+            '죄송합니다': 'joesonghamnida', '죄송': 'joesong', '합니다': 'hamnida', '죄': 'joe', '송': 'song', '합': 'hap', '니': 'ni', '다': 'da',
+            '안녕하세요': 'annyeonghaseyo', '하세요': 'haseyo', '해요': 'haeyo', '해': 'hae', '하':'ha',
+            '감사합니다': 'gamsahamnida', '감사': 'gamsa', '감': 'gam', '사': 'sa',
+            // Audio hints
+            'partez-bien': 'annyeonghi-gaseyo', 'restez-bien': 'annyeonghi-gyeseyo',
+            'au-revoir': 'annyeonghi-gyeseyo', // Leçon 5's "au revoir"
+            'desole': 'joesonghamnida', 'bonjour': 'annyeonghaseyo', 'merci': 'gamsahamnida'
+        };
+        const playAudio = (id) => {
+            if (!id) return;
+            const audio = document.getElementById(`audio-${id}`);
+            if (audio && audio.src && !audio.src.endsWith(window.location.pathname)) { // Check if src is not empty and not just the base URL
+                audio.currentTime = 0;
+                audio.play().catch(e => console.error("Audio play failed:", e));
+            } else {
+               // console.log(`Audio source for ${id} is missing or invalid.`);
+            }
+        };
+        document.querySelectorAll('[data-audio]').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await initAudio();
+                playAudio(btn.dataset.audio);
+            });
+        });
+
+        // --- Page Management ---
+        const showPage = (index) => {
+            pages.forEach((page, i) => page.classList.toggle('active', i === index));
+            updateNavigation(index);
+            updateProgressBar(index);
+            
+            // [수정] 마지막 페이지(19) 도달 시 사운드 재생 및 postMessage 전송
+            if (index === totalPages - 1) { // totalPages 20, last index 19
+                // [요청 사항] 부모 페이지에 완료 메시지 전송
+                window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                console.log('Lesson complete message sent to parent.');
+
+                if (soundsReady) {
+                    finishSound.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '0.5s');
+                }
+            }
+        };
+        const updateNavigation = (index) => {
+            prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+            const currentPage = pages[index];
+            const isQuizPage = currentPage.querySelector('form') !== null;
+            const isQuizAnswered = currentPage.dataset.answered === 'true';
+            retryBtn.classList.add('hidden');
+            if (isQuizPage && !isQuizAnswered) {
+                nextBtn.classList.add('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+            }
+        };
+        const updateProgressBar = (index) => {
+            progressBar.style.width = `${((index + 1) / totalPages) * 100}%`;
+        };
+        
+        // --- Navigation Events ---
+        nextBtn.addEventListener('click', async () => {
+            await initAudio();
+            if (currentPageIndex < totalPages - 1) {
+                currentPageIndex++;
+                if (soundsReady) pageTurnSound.triggerAttackRelease('A5', '0.05s');
+                showPage(currentPageIndex);
+            }
+        });
+        prevBtn.addEventListener('click', async () => {
+            await initAudio();
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                if (soundsReady) pageTurnSound.triggerAttackRelease('G5', '0.05s');
+                showPage(currentPageIndex);
+            }
+        });
+        retryBtn.addEventListener('click', async () => {
+            await initAudio();
+            const quizInfo = quizzes.find(q => q.pageIndex === currentPageIndex);
+            if(quizInfo) resetQuiz(quizInfo.id);
+        });
+        
+        // --- Hangul Keyboard Logic Factory ---
+        // [수정] Backspace 오류 수정된 버전
+        const createHangulComposer = () => {
+            const CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+            const JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+            const JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+            const HANGUL_OFFSET = 0xAC00;
+            const JUNG_PAIRS = { 'ㅗㅏ': 'ㅘ', 'ㅗㅐ': 'ㅙ', 'ㅗㅣ': 'ㅚ', 'ㅜㅓ': 'ㅝ', 'ㅜㅔ': 'ㅞ', 'ㅜㅣ': 'ㅟ', 'ㅡㅣ': 'ㅢ' };
+            const JONG_PAIRS = { 'ㄱㅅ': 'ㄳ', 'ㄴㅈ': 'ㄵ', 'ㄴㅎ': 'ㄶ', 'ㄹㄱ': 'ㄺ', 'ㄹㅁ': 'ㄻ', 'ㄹㅂ': 'ㄼ', 'ㄹㅅ': 'ㄽ', 'ㄹㅌ': 'ㄾ', 'ㄹㅍ': 'ㄿ', 'ㄹㅎ': 'ㅀ', 'ㅂㅅ': 'ㅄ' };
+            const JONG_DECOMPOSE = Object.fromEntries(Object.entries(JONG_PAIRS).map(([k, v]) => [v, k]));
+            const isVowel = c => JUNG.includes(c);
+            let cho, jung, jong, buffer;
+
+            const resetState = () => { cho = null; jung = null; jong = null; };
+            const flush = () => {
+                if (cho !== null) {
+                    const choIndex = CHO.indexOf(cho);
+                    const jungIndex = JUNG.indexOf(jung);
+                    const jongIndex = JONG.indexOf(jong || '');
+                    if (jungIndex > -1) buffer += String.fromCharCode(HANGUL_OFFSET + (choIndex * 21 + jungIndex) * 28 + jongIndex);
+                    else buffer += cho;
+                }
+                resetState();
+            };
+            const addChar = (char) => {
+                if (char === ' ' || char === ',' || char === '!' || char === '.') { // [수정] ! . 추가
+                    flush();
+                    buffer += char;
+                    return;
+                }
+                if (isVowel(char)) {
+                    if (cho === null) { flush(); cho = 'ㅇ'; jung = char; } 
+                    else if (jung === null) { jung = char; } 
+                    else if (JUNG_PAIRS[jung + char] && jong === null) { jung = JUNG_PAIRS[jung + char]; } // [수정] 종성 없을 때만
+                    else if (jong === null) { flush(); cho = 'ㅇ'; jung = char; } 
+                    else {
+                        const lastJong = jong;
+                        const decomposed = JONG_DECOMPOSE[lastJong];
+                        jong = null;
+                        if(decomposed) {
+                            jong = decomposed[0];
+                            flush();
+                            cho = decomposed[1]; jung = char;
+                        } else {
+                            flush();
+                            cho = lastJong; jung = char;
+                        }
+                    }
+                } else { // isConsonant
+                    if (jung === null) { flush(); cho = char; } 
+                    else if (jong === null) {
+                        if(JONG.includes(char)) jong = char;
+                        else { flush(); cho = char; }
+                    } else if (JONG_PAIRS[jong + char]) {
+                        jong = JONG_PAIRS[jong + char];
+                    } else { flush(); cho = char; }
+                }
+            };
+            const reset = () => { resetState(); buffer = ''; };
+            reset();
+
+            return {
+                process: (char) => {
+                    if (char === 'backspace') {
+                        if (jong !== null) {
+                            const decomposed = JONG_DECOMPOSE[jong];
+                            jong = decomposed ? decomposed[0] : null;
+                        } else if (jung !== null) {
+                            // [수정] 복잡한 모음(예: ㅘ) 분해 로직
+                            const jungDecomposed = Object.keys(JUNG_PAIRS).find(key => JUNG_PAIRS[key] === jung);
+                            jung = jungDecomposed ? jungDecomposed[0] : null;
+                        }
+                        else if (cho !== null) cho = null;
+                        else if (buffer.length > 0) { 
+                            flush();
+                            buffer = buffer.slice(0, -1);
+                        }
+                    } else addChar(char);
+                    
+                    let currentSyllable = '';
+                    if (cho !== null) {
+                        const choIndex = CHO.indexOf(cho);
+                        const jungIndex = JUNG.indexOf(jung);
+                        const jongIndex = JONG.indexOf(jong || '');
+                        if(jungIndex > -1) currentSyllable = String.fromCharCode(HANGUL_OFFSET + (choIndex * 21 + jungIndex) * 28 + jongIndex);
+                        else currentSyllable = cho;
+                    }
+                    return buffer + currentSyllable;
+                },
+                reset: reset,
+                getFinal: () => { flush(); return buffer; }
+            };
+        };
+
+        // [수정] createKeyboard가 onKey 콜백을 받도록 수정
+        const createKeyboard = (container, onKey, addExtraKeys = false) => {
+            const layout = ["ㅂㅈㄷㄱㅅㅛㅕㅑㅐㅔ", "ㅁㄴㅇㄹㅎㅗㅓㅏㅣ", "ㅋㅌㅊㅍㅠㅜㅡ"];
+            const shiftLayout = ["ㅃㅉㄸㄲㅆㅛㅕㅑㅒㅖ", "ㅁㄴㅇㄹㅎㅗㅓㅏㅣ", "ㅋㅌㅊㅍㅠㅜㅡ"];
+            let isShifted = false;
+
+            const render = () => {
+                container.innerHTML = '';
+                const currentLayout = isShifted ? shiftLayout : layout;
+                currentLayout.forEach(row => {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'keyboard-row';
+                    row.split('').forEach(char => {
+                        const keyBtn = document.createElement('button');
+                        keyBtn.type = 'button';
+                        keyBtn.className = 'key';
+                        keyBtn.textContent = char;
+                        keyBtn.dataset.char = char;
+                        rowDiv.appendChild(keyBtn);
+                    });
+                    container.appendChild(rowDiv);
+                });
+
+                const bottomRow = document.createElement('div');
+                bottomRow.className = 'keyboard-row';
+                
+                const shiftBtn = document.createElement('button');
+                Object.assign(shiftBtn, { type: 'button', className: 'key', textContent: 'Shift' });
+                shiftBtn.onclick = () => { // [수정] 클릭 핸들러를 버튼에 직접 할당
+                    isShifted = !isShifted;
+                    render();
+                };
+
+                const backspaceBtn = document.createElement('button');
+                Object.assign(backspaceBtn, { type: 'button', className: 'key', textContent: '⌫' });
+                backspaceBtn.dataset.char = 'backspace';
+                
+                const spaceBtn = document.createElement('button');
+                Object.assign(spaceBtn, { type: 'button', className: 'key flex-grow', textContent: 'Space'});
+                spaceBtn.dataset.char = ' ';
+
+                if (addExtraKeys) {
+                    const commaBtn = document.createElement('button');
+                    Object.assign(commaBtn, { type: 'button', className: 'key', textContent: ','});
+                    commaBtn.dataset.char = ',';
+                    const periodBtn = document.createElement('button'); // [수정] . 키 추가
+                    Object.assign(periodBtn, { type: 'button', className: 'key', textContent: '.'});
+                    periodBtn.dataset.char = '.';
+                    const exclamBtn = document.createElement('button'); // [수정] ! 키 추가
+                    Object.assign(exclamBtn, { type: 'button', className: 'key', textContent: '!'});
+                    exclamBtn.dataset.char = '!';
+                    bottomRow.append(shiftBtn, spaceBtn, commaBtn, periodBtn, exclamBtn, backspaceBtn);
+                } else {
+                    bottomRow.append(shiftBtn, spaceBtn, backspaceBtn);
+                }
+                container.appendChild(bottomRow);
+            };
+
+            // [수정] 컨테이너에 이벤트 리스너를 달고 onKey 콜백 호출
+            // [오류 수정] 중복 리스너 방지
+            if (container._keyClickHandler) {
+                container.removeEventListener('click', container._keyClickHandler);
+            }
+            container._keyClickHandler = (e) => {
+                const keyEl = e.target.closest('.key');
+                if (keyEl && keyEl.dataset.char) {
+                    onKey(keyEl.dataset.char); // 콜백 실행
+                    if (isShifted && !keyEl.textContent.includes('Shift')) { // Shift 키 자신이 아닐 때
+                        isShifted = false;
+                        render();
+                    }
+                }
+            };
+            container.addEventListener('click', container._keyClickHandler);
+
+            render();
+        };
+
+
+        // --- Quiz Setup & Logic ---
+        const quizzes = [
+            { id: 'quiz-1', pageIndex: 6, type: 'radio', answer: '안녕히 가세요' },
+            { id: 'quiz-2', pageIndex: 7, type: 'radio', answer: '죄송합니다' },
+            { id: 'quiz-3', pageIndex: 8, type: 'order', answer: ['안녕히', '가세요'], options: ['안녕', '세요', '계세요', '하세요', '안녕히', '합니다'] },
+            { id: 'quiz-4', pageIndex: 9, type: 'order', answer: ['감','사','합','니','다'], options: ['합','세','사','니', '하','죄','해','감','다','송','안'] },
+            { id: 'quiz-5', pageIndex: 10, type: 'order', answer: ['안','녕','하','세','요'], options: ['합','세','요','니','죄','사','감','녕','송','안','다','하'] },
+            { id: 'quiz-6', pageIndex: 11, type: 'keyboard', answer: '죄송합니다', altAnswer: '죄송해요' },
+            { id: 'quiz-7', pageIndex: 12, type: 'keyboard', answer: '안녕히 계세요' },
+            { id: 'quiz-8', pageIndex: 13, type: 'keyboard', answer: '감사합니다' },
+            { id: 'quiz-9', pageIndex: 14, type: 'keyboard', answer: '안녕히' },
+            { id: 'quiz-10', pageIndex: 15, type: 'keyboard', answer: '가세요' },
+            { id: 'quiz-11', pageIndex: 16, type: 'keyboard', answer: '안녕히 가세요' },
+            { id: 'quiz-12', pageIndex: 17, type: 'keyboard', answer: '감사합니다,안녕히 가세요', ignorePunctuation: true },
+            { id: 'quiz-13', pageIndex: 18, type: 'keyboard', answer: '죄송합니다,안녕히 계세요', ignorePunctuation: true }
+        ];
+
+        let quizStates = {};
+
+        const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
+
+        const initQuiz = (quizInfo) => {
+            const form = document.getElementById(quizInfo.id);
+            if (!form) return;
+            
+            const page = form.closest('.page');
+            page.dataset.answered = 'false';
+            
+            const feedbackEl = form.querySelector('.feedback-message');
+            if(feedbackEl) feedbackEl.innerHTML = '';
+            form.querySelector('button[type=submit]').classList.remove('hidden');
+
+            quizStates[quizInfo.id] = { userAnswer: quizInfo.type.includes('order') ? [] : '' };
+
+            if (quizInfo.type === 'order') {
+                const quizNumber = quizInfo.id.match(/\d+/)[0];
+                const optionsContainer = document.getElementById(`q${quizNumber}-options`);
+                const answerBox = document.getElementById(`q${quizNumber}-answer-box`);
+                if (!optionsContainer || !answerBox) return;
+
+                optionsContainer.innerHTML = '';
+                answerBox.innerHTML = '';
+                
+                shuffleArray([...quizInfo.options]).forEach((optionText, index) => {
+                    const optionCard = document.createElement('button');
+                    optionCard.type = 'button';
+                    
+                    // [수정] JS에서 하드코딩된 스타일 대신 Tailwind 클래스 사용 (반응형)
+                    if (quizInfo.id === 'quiz-4' || quizInfo.id === 'quiz-5') { // Syllable quizzes
+                        optionCard.className = 'interactive-card order-option-card p-1.5 sm:p-3 text-base sm:text-2xl';
+                    } else { // Word quizzes (quiz-3)
+                        optionCard.className = 'interactive-card order-option-card p-2 sm:p-4 text-base sm:text-2xl';
+                    }
+                    optionCard.textContent = optionText;
+                    optionCard.dataset.optionIndex = index;
+                    
+                    optionCard.onclick = () => {
+                        const audioId = hangulToAudioId[optionText];
+                        if (audioId) playAudio(audioId);
+                        quizStates[quizInfo.id].userAnswer.push({text: optionText, index: index});
+                        optionCard.classList.add('hidden');
+                        
+                        const answerCard = document.createElement('span');
+                        // [수정] JS에서 하드코딩된 스타일 대신 Tailwind 클래스 사용 (반응형)
+                        if (quizInfo.id === 'quiz-4' || quizInfo.id === 'quiz-5') {
+                            answerCard.className = 'order-answer-card p-1.5 sm:p-3 text-base sm:text-2xl';
+                        } else {
+                            answerCard.className = 'order-answer-card p-2 sm:p-4 text-base sm:text-2xl';
+                        }
+                        answerCard.textContent = optionText;
+                        answerBox.appendChild(answerCard);
+                    };
+                    optionsContainer.appendChild(optionCard);
+                });
+            } else if (quizInfo.type === 'keyboard') {
+                const state = (quizStates[quizInfo.id] = { hangulComposer: createHangulComposer() });
+                const kbdContainer = form.querySelector(`.keyboard-container`);
+                const inputSpan = form.querySelector('.quiz-input');
+                inputSpan.textContent = '';
+                
+                // [수정] createKeyboard에 콜백을 전달하여 이벤트 리스너 중복 방지
+                const handleKey = (char) => {
+                    inputSpan.textContent = state.hangulComposer.process(char);
+                };
+
+                createKeyboard(kbdContainer, handleKey, quizInfo.id === 'quiz-12' || quizInfo.id === 'quiz-13');
+            } else if (quizInfo.type === 'radio') {
+                form.reset();
+            }
+        };
+
+        const resetQuiz = (quizId) => {
+            const form = document.getElementById(quizId);
+            if (!form) return;
+            form.querySelector('.feedback-message').innerHTML = '';
+            form.querySelector('button[type=submit]').classList.remove('hidden');
+            retryBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            form.closest('.page').dataset.answered = 'false'; // [수정] 답변 상태 리셋
+
+            const quizInfo = quizzes.find(q => q.id === quizId);
+            if (!quizInfo) return; // [수정] 퀴즈 정보 없으면 종료
+            
+            if (quizInfo.type === 'radio') {
+                form.reset();
+            } else if (quizInfo.type === 'order') {
+                initQuiz(quizInfo); // [수정] initQuiz로 리셋
+            } else if (quizInfo.type === 'keyboard') {
+                initQuiz(quizInfo); // [수정] initQuiz로 리셋
+            }
+        };
+        
+        document.querySelectorAll('.backspace-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const quizId = `quiz-${btn.dataset.quizId}`;
+                const state = quizStates[quizId];
+                if (state && state.userAnswer.length > 0) { // [수정] state가 존재하는지 확인
+                    const lastAnswer = state.userAnswer.pop();
+                    const answerBox = document.getElementById(`q${btn.dataset.quizId}-answer-box`);
+                    if(answerBox.lastChild) answerBox.removeChild(answerBox.lastChild);
+                    const optionButton = document.querySelector(`#q${btn.dataset.quizId}-options .order-option-card[data-option-index='${lastAnswer.index}']`);
+                    if(optionButton) optionButton.classList.remove('hidden');
+                }
+            });
+        });
+
+        quizzes.forEach(quizInfo => {
+            const form = document.getElementById(quizInfo.id);
+            if (form) {
+                initQuiz(quizInfo);
+            } else {
+                return; 
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await initAudio();
+                
+                let isCorrect = false;
+                const state = quizStates[quizInfo.id];
+                
+                if (quizInfo.type === 'radio') {
+                    const formData = new FormData(form);
+                    const qName = `q${quizInfo.id.match(/\d+/)[0]}`;
+                    isCorrect = formData.get(qName) === quizInfo.answer;
+                } else if (quizInfo.type === 'order') {
+                    const joinedAnswer = state.userAnswer.map(i => i.text).join('');
+                    isCorrect = joinedAnswer === quizInfo.answer.join('') || (quizInfo.altAnswer && joinedAnswer === quizInfo.altAnswer.join(''));
+                } else { // keyboard
+                    let finalAnswer = state.hangulComposer.getFinal().trim();
+                    form.querySelector('.quiz-input').textContent = finalAnswer; // [수정] 최종 답변 표시
+
+                    if(quizInfo.ignorePunctuation) {
+                        const normalize = str => str.replace(/[,\.!\s]/g, '');
+                        finalAnswer = normalize(finalAnswer);
+                        const correctAnswer = normalize(quizInfo.answer);
+                        const altCorrectAnswer = quizInfo.altAnswer ? normalize(quizInfo.altAnswer) : null;
+                        isCorrect = (finalAnswer === correctAnswer) || (altCorrectAnswer && finalAnswer === altCorrectAnswer);
+                    } else {
+                        isCorrect = (finalAnswer === quizInfo.answer) || (quizInfo.altAnswer && finalAnswer === quizInfo.altAnswer);
+                    }
+                }
+
+                const feedbackEl = form.querySelector('.feedback-message');
+                form.querySelector('button[type=submit]').classList.add('hidden');
+
+                if (isCorrect) {
+                    if (soundsReady) correctSound.triggerAttackRelease('C5', '0.2s');
+                    feedbackEl.textContent = 'Correct !';
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500'; // 반응형 텍스트
+                    form.closest('.page').dataset.answered = 'true';
+                    updateNavigation(currentPageIndex);
+                } else {
+                    if (soundsReady) wrongSound.triggerAttackRelease('A#2', '0.2s');
+                    feedbackEl.textContent = 'Ce n\'est pas correct.';
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500'; // 반응형 텍스트
+                    retryBtn.classList.remove('hidden');
+                    nextBtn.classList.add('hidden');
+                }
+            });
+        });
+        
+        // --- Physical Keyboard Input Handler ---
+        const keyToHangulMap = {
+            'q': 'ㅂ', 'w': 'ㅈ', 'e': 'ㄷ', 'r': 'ㄱ', 't': 'ㅅ', 'y': 'ㅛ', 'u': 'ㅕ', 'i': 'ㅑ', 'o': 'ㅐ', 'p': 'ㅔ',
+            'a': 'ㅁ', 's': 'ㄴ', 'd': 'ㅇ', 'f': 'ㄹ', 'g': 'ㅎ', 'h': 'ㅗ', 'j': 'ㅓ', 'k': 'ㅏ', 'l': 'ㅣ',
+            'z': 'ㅋ', 'x': 'ㅌ', 'c': 'ㅊ', 'v': 'ㅍ', 'b': 'ㅠ', 'n': 'ㅜ', 'm': 'ㅡ',
+            'Q': 'ㅃ', 'W': 'ㅉ', 'E': 'ㄸ', 'R': 'ㄲ', 'T': 'ㅆ', 'O': 'ㅒ', 'P': 'ㅖ'
+        };
+
+        window.addEventListener('keydown', (e) => {
+            const currentPage = pages[currentPageIndex];
+            if (!currentPage || !currentPage.classList.contains('active')) return;
+            
+            const form = currentPage.querySelector('form');
+            if (!form || !form.id.startsWith('quiz-')) return;
+
+            const kbdContainer = currentPage.querySelector('.keyboard-container');
+            if (!kbdContainer) return;
+            
+            e.preventDefault(); 
+
+            const quizIdNum = kbdContainer.dataset.quizId;
+            const quizId = `quiz-${quizIdNum}`;
+            const state = quizStates[quizId];
+            const inputSpan = currentPage.querySelector(`.quiz-input[data-quiz-id='${quizIdNum}']`);
+
+            if (!state || !inputSpan) return;
+            
+            let char;
+            if (e.key === 'Backspace') {
+                char = 'backspace';
+            } else if (e.key === ' ' || e.key === ',' || e.key === '.' || e.key === '!') { // [수정] . ! 추가
+                char = e.key;
+            } else {
+                char = keyToHangulMap[e.key];
+            }
+            
+            if (char) {
+                inputSpan.textContent = state.hangulComposer.process(char);
+            }
+        });
+
+        // --- Initialisation ---
+        showPage(currentPageIndex);
+        document.body.addEventListener('click', initAudio, { once: true });
+        document.body.addEventListener('touchstart', initAudio, { once: true });
+    });
+    </script>
+</body>
+</html>
