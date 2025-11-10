@@ -78,6 +78,25 @@
                 padding: 2rem; /* lg:p-8 */
             }
         }
+        /* [신규] 음소거 버튼 스타일 */
+        .mute-btn {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #475569; /* slate-600 */
+            font-weight: bold;
+            padding: 0.375rem 0.75rem; /* py-1.5 px-3 */
+            font-size: 0.875rem; /* text-sm */
+            border-radius: 0.5rem; /* rounded-lg */
+            transition: background-color 0.2s;
+        }
+        .mute-btn:hover {
+            background-color: #e2e8f0; /* slate-200 */
+        }
+        @media (min-width: 640px) { /* sm: */
+            .mute-btn {
+                padding: 0.5rem 1.25rem; /* sm:py-2 sm:px-5 */
+                font-size: 1rem; /* sm:text-base */
+            }
+        }
     </style>
 </head>
 <!-- [수정] h-screen 추가 -->
@@ -137,7 +156,11 @@
         <!-- Navigation -->
         <!-- [수정] Nav-container 스타일을 CSS에서 Tailwind로 재구성 (모바일 최적화) -->
         <div class="nav-container">
-            <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors justify-self-start">Précédent</button>
+            <!-- [신규] Mute Button -->
+            <div class="justify-self-start flex gap-2">
+                <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+                <button id="mute-btn" class="mute-btn">🔈</button>
+            </div>
             
             <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
                 <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
@@ -152,12 +175,11 @@
     </div>
 
     <script>
-    // [!!!] 중요: 이 ID를 님의 Base 44 Integration ID로 교체하세요.
-    // Base 44 대시보드 > Integrations > "Naver Clova Speech" 클릭 시 ID를 확인할 수 있습니다.
-    // const YOUR_NAVER_CLOVA_INTEGRATION_ID_HERE = "int_..."; // <-- [수정] 이 줄을 삭제합니다.
-
     // This function is in the global scope and can be accessed by onclick attributes
+    // [수정] Mute 기능 추가
+    let isMuted = false;
     function playAudio(id) {
+        if (isMuted) return; // 음소거 상태면 재생 안함
         const audio = document.getElementById(`audio-${id}`);
         if (audio) {
             audio.currentTime = 0;
@@ -167,22 +189,20 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         // --- [삭제] Layout Scaling ---
-        // const scaleLayout = () => { ... };
-        // window.addEventListener('resize', scaleLayout);
-        // scaleLayout();
-        // --- [끝] ---
 
         // --- Basic Setup ---
         const totalPages = 17; // 0-16
         let currentPageIndex = 0;
         let scores = Array(15).fill(null); // 15개의 퀴즈 (0-14)
-        let recognitionAttempts = {};
+        let recognitionAttempts = {}; // [수정] 시도 횟수 (1 또는 2)
+        let soundsReady = false; // [수정] initAudio 플래그
 
         const pages = document.querySelectorAll('.page');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
-        const passerBtn = document.getElementById('passer-btn'); // 'Passer' 버튼 (기존 코드에 있음)
+        const passerBtn = document.getElementById('passer-btn');
         const retryBtn = document.getElementById('retry-btn');
+        const muteBtn = document.getElementById('mute-btn'); // [신규] Mute 버튼
         const progressBar = document.getElementById('progress-indicator');
         
         let correctSound, wrongSound, pageTurnSound;
@@ -201,11 +221,18 @@
         };
         document.body.addEventListener('click', initAudioSynth, { once: true });
         document.body.addEventListener('touchstart', initAudioSynth, { once: true });
+
+        // [신규] Mute 버튼 이벤트 리스너
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteBtn.textContent = isMuted ? '🔇' : '🔈';
+        });
         
-        // --- [수정] Speech Recognition API -> MediaRecorder API로 변경 ---
+        // --- [수정] MediaRecorder API 설정 ---
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
+        let recordingTimeout; // [신규] 10초 타임아웃
 
         async function startRecording(quizIndex) {
             if (isRecording) return;
@@ -218,7 +245,8 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 isRecording = true;
                 audioChunks = [];
-                mediaRecorder = new MediaRecorder(stream);
+                // [오류 수정] audio/wav 대신 audio/webm 또는 기본값 사용 (wav는 브라우저 지원이 제한적)
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); 
                 
                 mediaRecorder.ondataavailable = event => {
                     audioChunks.push(event.data);
@@ -229,10 +257,19 @@
                     if(micBtn) micBtn.classList.add('recording');
                     const transcriptEl = document.querySelector(`#transcript-${quizIndex}`);
                     if(transcriptEl) transcriptEl.textContent = "J'écoute...";
+
+                    // [신규] 10초 녹음 제한
+                    clearTimeout(recordingTimeout);
+                    recordingTimeout = setTimeout(() => {
+                        if (isRecording) {
+                            stopRecording(quizIndex);
+                        }
+                    }, 10000); // 10초
                 };
 
                 mediaRecorder.onstop = () => {
                     isRecording = false;
+                    clearTimeout(recordingTimeout); // [신규] 타임아웃 클리어
                     const micBtn = document.querySelector(`#mic-btn-${quizIndex}`);
                     if(micBtn) {
                         micBtn.classList.remove('recording');
@@ -242,7 +279,7 @@
                     if(transcriptEl) transcriptEl.textContent = "Évaluation en cours...";
 
                     // 오디오를 Base64로 변환
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' }); // Naver는 wav, mp3, ogg 등 지원
+                    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob);
                     reader.onloadend = () => {
@@ -259,17 +296,26 @@
                 
             } catch (err) {
                 console.error("Error starting recording:", err);
+                // [수정] 스크린샷의 메시지와 동일하게 변경
                 alert("Impossible d'accéder au microphone. Veuillez autoriser l'accès.");
             }
         }
 
         function stopRecording(quizIndex) {
+            clearTimeout(recordingTimeout); // [신규] 타임아웃 클리어
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
             }
         }
+
+        // [신규] 텍스트 정규화 함수
+        function normalizeText(text) {
+            if (typeof text !== 'string') return '';
+            // 띄어쓰기, 구두점(.,!?) 제거, 소문자 변환
+            return text.trim().replace(/[.,!?'\s]/g, '').toLowerCase();
+        }
         
-        // --- [신규] Naver API 호출 및 결과 처리 ---
+        // --- [수정] Naver API 호출 및 새 점수 로직 ---
         async function handlePronunciationEvaluation(quizIndex, audioBase64) {
             const quiz = quizzes[quizIndex];
             const page = document.querySelector(`#page-${currentPageIndex}`);
@@ -278,41 +324,34 @@
             const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
             const attemptsEl = page.querySelector(`#attempts-${quizIndex}`);
 
-            if (!recognitionAttempts[quizIndex]) recognitionAttempts[quizIndex] = 0;
+            if (recognitionAttempts[quizIndex] === undefined) recognitionAttempts[quizIndex] = 0;
             recognitionAttempts[quizIndex]++;
+            const isFirstAttempt = recognitionAttempts[quizIndex] === 1;
             
             try {
-                // [수정] ID 체크 로직 삭제
-                // if (YOUR_NAVER_CLOVA_INTEGRATION_ID_HERE === "int_...") {
-                //     throw new Error("Veuillez définir 'YOUR_NAVER_CLOVA_INTEGRATION_ID_HERE' en haut du script.");
-                // }
-
-                // [수정] Base 44 백엔드 함수를 표준 fetch()로 호출합니다.
-                // 백엔드 함수 이름 "naverClovaSpeech"를 사용합니다.
+                // [수정] /api/functions/naverClovaSpeech 호출
                 const response = await fetch('/api/functions/naverClovaSpeech', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        audioBase64: yourRecordedAudioBase64,,
-                        languageCode: "Kor", // 백엔드 함수에 필요
+                        audioBase64: audioBase64,
+                        languageCode: "Kor", // [!!!] "ko-KR" -> "Kor"로 수정
                         referenceText: quiz.answer
                     })
                 });
     
                 if (!response.ok) {
-                    // 백엔드에서 온 JSON 에러 메시지 파싱 시도
                     let errorDetails = "Erreur inconnue";
                     try {
                         const errorResult = await response.json();
                         errorDetails = errorResult.error || JSON.stringify(errorResult);
                     } catch (e) {
-                        // JSON 파싱 실패 시 텍스트로 대체
                         errorDetails = await response.text();
                     }
                     throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
                 }
     
-                const result = await response.json();
+                const result = await response.json(); // { score, transcribedText, feedback }
 
                 if (!result || typeof result.score === 'undefined') {
                     throw new Error("Réponse invalide du backend: " + JSON.stringify(result));
@@ -321,26 +360,38 @@
                 // 1. 인식된 텍스트 표시
                 if (transcriptEl) transcriptEl.textContent = `"${result.transcribedText || '...'}"`;
 
-                // 2. 점수 계산 (Naver 90점 이상 2점, 70점 이상 1점)
-                let newScore = 0;
-                if (result.score >= 90) {
-                    newScore = 2; // 1차 시도
-                } else if (result.score >= 70) {
-                    newScore = 1; // 1차 시도
-                }
-                // (3회 시도 내 최고 점수 기록)
-                if (scores[quizIndex] === null || newScore > scores[quizIndex]) {
-                    scores[quizIndex] = newScore;
-                }
+                // 2. [신규] 정답 확인 (텍스트 일치 + 점수 70점 이상)
+                const normalizedTranscribed = normalizeText(result.transcribedText);
+                const normalizedReference = normalizeText(quiz.answer);
+                
+                const isTextMatch = normalizedTranscribed === normalizedReference;
+                const isScorePass = result.score >= 70;
+                const isCorrect = isTextMatch && isScorePass;
 
-                // 3. [요청사항 수정] 내부 피드백 텍스트 제거
-                // feedbackEl.textContent = ... (삭제)
-                if (feedbackEl) feedbackEl.textContent = ''; // 항상 비움
+                let earnedPoints = 0;
 
-                if (newScore > 0) {
+                // 3. [신규] 점수 및 UI 로직
+                if (isCorrect) {
+                    earnedPoints = isFirstAttempt ? 2 : 1; // 1차 2점, 2차 1점
+                    scores[quizIndex] = earnedPoints;
                     correctSound?.triggerAttackRelease('C5', '0.2s');
+                    if(micBtn) micBtn.disabled = true; // 통과 시 마이크 비활성화
+                    passerBtn.classList.add('hidden'); // 재시도 버튼 숨기기
                 } else {
-                    wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                    // 1차 시도 실패 (재시도 기회)
+                    if (isFirstAttempt) {
+                        scores[quizIndex] = null; // 아직 점수 없음 (재시도 가능)
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        if(attemptsEl) attemptsEl.textContent = "Tentatives restantes : 1";
+                        // micBtn 비활성화 안함, passerBtn 표시 안함
+                    } else {
+                    // 2차 시도 실패 (0점 처리)
+                        scores[quizIndex] = 0;
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        if(feedbackEl) feedbackEl.textContent = `La bonne réponse est : "${quiz.answer}"`;
+                        if(micBtn) micBtn.disabled = true; // 2회 실패 시 비활성화
+                        passerBtn.classList.remove('hidden'); // 'Passer' 버튼 표시
+                    }
                 }
 
                 // 4. [요청사항] 점수와 피드백을 부모(Parent) 페이지로 전송
@@ -348,20 +399,11 @@
                     type: 'pronunciation_result',
                     quizId: quizIndex,
                     score: result.score, // Naver 원점수 (0-100)
-                    pointsAwarded: newScore, // 퀴즈 점수 (0, 1, 2)
+                    pointsAwarded: earnedPoints, // 획득 점수 (0, 1, 2)
                     transcribedText: result.transcribedText,
                     referenceText: quiz.answer,
                     feedback: result.feedback // 백엔드에서 생성된 피드백
                 }, '*');
-
-                // 5. 시도 횟수 관리
-                if (newScore < 2 && recognitionAttempts[quizIndex] >= 3) {
-                    // 3회 시도 후 90점 미만이면 0점 처리 (이미 newScore가 0 또는 1임)
-                    scores[quizIndex] = Math.max(0, scores[quizIndex] || 0); // null이면 0점으로 확정
-                    feedbackEl.textContent = `La bonne réponse est : "${quiz.answer}"`;
-                    passerBtn.classList.remove('hidden'); // 다음으로 넘어가기 버튼
-                    if(micBtn) micBtn.disabled = true;
-                }
 
             } catch (error) {
                 console.error("Erreur lors de l'évaluation:", error);
@@ -370,10 +412,10 @@
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                 }
                 // 에러 발생 시 시도 횟수 롤백
-                recognitionAttempts[quizIndex]--; 
+                if (recognitionAttempts[quizIndex] > 0) recognitionAttempts[quizIndex]--; 
             } finally {
-                // 6. UI 업데이트
-                if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 3 - recognitionAttempts[quizIndex])}`;
+                // 5. UI 업데이트
+                if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 2 - recognitionAttempts[quizIndex])}`; // [수정] 2회 시도
                 if(micBtn) micBtn.classList.remove('loading');
                 updateNavigation(currentPageIndex);
             }
@@ -447,7 +489,8 @@
                     </button>
                     <div id="transcript-${quizIndex}" class="text-base sm:text-xl lg:text-2xl text-slate-500 h-8"></div>
                     <div class="feedback-message text-base sm:text-xl"></div>
-                    <div id="attempts-${quizIndex}" class="text-xs sm:text-sm text-slate-400 mt-2">Tentatives restantes : 3</div>
+                    <!-- [수정] 2회 시도로 변경 -->
+                    <div id="attempts-${quizIndex}" class="text-xs sm:text-sm text-slate-400 mt-2">Tentatives restantes : 2</div>
                 `;
             }
 
@@ -480,14 +523,15 @@
                 const isAnswered = scores[quizIndex] !== null;
                 nextBtn.classList.toggle('hidden', !isAnswered);
 
-                // [수정] 시도 횟수 초과 및 오답 시 'Passer' 버튼 표시
-                if (recognitionAttempts[quizIndex] >= 3 && (scores[quizIndex] === 0 || scores[quizIndex] === 1)) {
+                const quiz = quizzes[quizIndex];
+                
+                // [수정] 2회 시도 실패 시 'Passer' 버튼 표시
+                if (quiz.type.startsWith('speech') && recognitionAttempts[quizIndex] >= 2 && scores[quizIndex] === 0) {
                     passerBtn.classList.remove('hidden');
                     nextBtn.classList.add('hidden'); // 'Passer'가 'Next'를 대신함
                 }
                 
                 // MCQ 오답 시 'Retry' 버튼 표시
-                const quiz = quizzes[quizIndex];
                 if (quiz.type === 'mcq' && scores[quizIndex] === 0) {
                      retryBtn.classList.remove('hidden');
                 }
@@ -526,11 +570,12 @@
         });
         
         retryBtn.addEventListener('click', () => {
+            // [수정] 이 버튼은 MCQ 전용임
             const quizIndex = parseInt(pages[currentPageIndex].dataset.quizIndex);
-            scores[quizIndex] = null; // Reset score to unanswered
             const quiz = quizzes[quizIndex];
-
+            
             if (quiz.type === 'mcq') {
+                 scores[quizIndex] = null; // Reset score to unanswered
                  const form = document.querySelector(`#quiz-form-${quizIndex}`);
                  if (form) {
                      form.reset();
@@ -540,8 +585,6 @@
                      form.querySelector('button[type=submit]').classList.remove('hidden');
                  }
             } 
-            // [수정] Speech 퀴즈는 'Passer' 버튼만 있으므로 retry 로직은 MCQ에만 해당
-            // else if (quiz.type.startsWith('speech')) { ... }
 
             retryBtn.classList.add('hidden');
             passerBtn.classList.add('hidden');
@@ -557,13 +600,15 @@
             
             if (micBtn) {
                 micBtn.addEventListener('click', () => {
+                    if (micBtn.disabled || micBtn.classList.contains('loading')) return;
+
                     if (!recognitionAttempts[quizIndex]) recognitionAttempts[quizIndex] = 0;
-                    if (recognitionAttempts[quizIndex] >= 3) return; // 시도 횟수 초과
+                    if (recognitionAttempts[quizIndex] >= 2) return; // [수정] 2회 시도 제한
                     
                     if (isRecording) {
                         stopRecording(quizIndex);
                     } else {
-                        initAudioSynth(); // 오디오 컨텍스트 활성화
+                        initAudioSynth(); // 오디오 컨텍스트 활성화 (클릭 시)
                         startRecording(quizIndex);
                     }
                 });
@@ -609,8 +654,9 @@
         
         // --- Score Calculation ---
         function calculateAndShowScore() {
-            const totalScore = scores.reduce((sum, score) => sum + (score || 0), 0);
-            const maxScore = 30; // 스피치 10문제 * 2점 = 20점, MCQ 5문제 * 2점 = 10점
+            // [수정] 스피치 10문제 (최대 2점), MCQ 5문제 (2점) = 20 + 10 = 30점 만점
+            const totalScore = scores.reduce((sum, score) => sum + (score === null ? 0 : score), 0);
+            const maxScore = 30;
             document.getElementById('final-score').textContent = `${totalScore} / ${maxScore}`;
             
             const messageEl = document.getElementById('evaluation-message');
