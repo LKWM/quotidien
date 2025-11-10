@@ -293,8 +293,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        audioBase64: audioBase64,
-                        languageCode: "ko-KR", // 백엔드 함수에 필요
+                        audioBase64: yourRecordedAudioBase64,,
+                        languageCode: "Kor", // 백엔드 함수에 필요
                         referenceText: quiz.answer
                     })
                 });
