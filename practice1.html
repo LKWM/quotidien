@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coréen - Pratique Orale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Nanum Gothic', sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        /* [수정] 고정 크기, transform 관련 속성 모두 제거 */
+        .course-container {
+            width: 100%;
+            max-width: 1000px;
+            /* height: 600px; -> h-full 클래스로 대체 */
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .quiz-option input:checked + label {
+            background-color: #38bdf8;
+            color: white;
+            border-color: #0284c7;
+        }
+        .feedback-message {
+            min-height: 2.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .mic-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .mic-btn.recording {
+            transform: scale(1.1);
+            background-color: #ef4444; /* red-500 */
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
+        }
+        .mic-btn.loading {
+            background-color: #6b7280; /* gray-500 */
+            cursor: not-allowed;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        /* [수정] 모바일 최적화를 위해 nav-container 재구성 */
+        .nav-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem; /* gap-4 */
+        }
+        @media (min-width: 640px) { /* sm: */
+            .nav-container {
+                padding: 1.5rem; /* sm:p-6 */
+            }
+        }
+        @media (min-width: 1024px) { /* lg: */
+            .nav-container {
+                padding: 2rem; /* lg:p-8 */
+            }
+        }
+    </style>
+</head>
+<!-- [수정] h-screen 추가 -->
+<body class="bg-slate-100 flex items-center justify-center min-h-screen h-screen p-2 sm:p-4">
+
+    <!-- [수정] h-full 추가, p-8 -> p-4 sm:p-6 lg:p-8 로 패딩 축소 -->
+    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden h-full">
+
+        <!-- Audio elements -->
+        <audio id="audio-annyeonghaseyo" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gaseyo" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio>
+        <audio id="audio-gamsahamnida" src="https://static.wixstatic.com/mp3/699687_cbf26bae6c624aeabbe85140522122c7.mp3" preload="auto"></audio>
+        <audio id="audio-joesonghamnida" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gyeseyo" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio>
+        
+        <!-- Page content -->
+        <!-- [수정] overflow-auto 추가, 하단 탐색바 영역 확보를 위해 pb-16 sm:pb-20 추가 -->
+        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center overflow-auto pb-16 sm:pb-20">
+
+            <!-- Page 0: Title -->
+            <!-- [수정] 텍스트 크기 반응형으로 축소 -->
+            <div id="page-0" class="page w-full h-full flex-col justify-center items-center">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-800">Pratique Orale</h1>
+                <p class="text-lg sm:text-xl lg:text-2xl text-slate-600 mt-2 sm:mt-4 leading-relaxed">Testez votre prononciation et votre compréhension.</p>
+            </div>
+
+            <!-- Speech Recognition Pages (1-5) -->
+            <div id="page-1" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="0"></div>
+            <div id="page-2" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="1"></div>
+            <div id="page-3" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="2"></div>
+            <div id="page-4" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="3"></div>
+            <div id="page-5" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="4"></div>
+            
+            <!-- Multiple Choice Pages (6-10) -->
+            <div id="page-6" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="5"></div>
+            <div id="page-7" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="6"></div>
+            <div id="page-8" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="7"></div>
+            <div id="page-9" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="8"></div>
+            <div id="page-10" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="9"></div>
+
+            <!-- Speech Recognition Pages (11-15) -->
+            <div id="page-11" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="10"></div>
+            <div id="page-12" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="11"></div>
+            <div id="page-13" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="12"></div>
+            <div id="page-14" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="13"></div>
+            <div id="page-15" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="14"></div>
+            
+            <!-- Page 16: Final Score -->
+            <!-- [수정] 텍스트 크기 반응형으로 축소 -->
+            <div id="page-16" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800">Score Final</h2>
+                <p id="final-score" class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-sky-500 my-4 sm:my-6">0 / 30</p>
+                <p id="evaluation-message" class="text-base sm:text-xl lg:text-2xl text-slate-600 max-w-xl leading-relaxed"></p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <!-- [수정] Nav-container 스타일을 CSS에서 Tailwind로 재구성 (모바일 최적화) -->
+        <div class="nav-container">
+            <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors justify-self-start">Précédent</button>
+            
+            <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
+                <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
+            </div>
+            
+            <div class="justify-self-end flex gap-2">
+                <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
+                <button id="passer-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Passer</button>
+                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // [!!!] 중요: 이 ID를 님의 Base 44 Integration ID로 교체하세요.
+    // Base 44 대시보드 > Integrations > "Naver Clova Speech" 클릭 시 ID를 확인할 수 있습니다.
+    // const YOUR_NAVER_CLOVA_INTEGRATION_ID_HERE = "int_..."; // <-- [수정] 이 줄을 삭제합니다.
+
+    // This function is in the global scope and can be accessed by onclick attributes
+    function playAudio(id) {
+        const audio = document.getElementById(`audio-${id}`);
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play().catch(e => console.error("Audio play failed:", e));
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- [삭제] Layout Scaling ---
+        // const scaleLayout = () => { ... };
+        // window.addEventListener('resize', scaleLayout);
+        // scaleLayout();
+        // --- [끝] ---
+
+        // --- Basic Setup ---
+        const totalPages = 17; // 0-16
+        let currentPageIndex = 0;
+        let scores = Array(15).fill(null); // 15개의 퀴즈 (0-14)
+        let recognitionAttempts = {};
+
+        const pages = document.querySelectorAll('.page');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const passerBtn = document.getElementById('passer-btn'); // 'Passer' 버튼 (기존 코드에 있음)
+        const retryBtn = document.getElementById('retry-btn');
+        const progressBar = document.getElementById('progress-indicator');
+        
+        let correctSound, wrongSound, pageTurnSound;
+        const initAudioSynth = async () => {
+            if (soundsReady) return;
+            try {
+                await Tone.start();
+                correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
+                wrongSound = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.2 } }).toDestination();
+                pageTurnSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+                soundsReady = true;
+                console.log('Audio context started.');
+            } catch (e) {
+                console.error("Audio context could not be started: ", e);
+            }
+        };
+        document.body.addEventListener('click', initAudioSynth, { once: true });
+        document.body.addEventListener('touchstart', initAudioSynth, { once: true });
+        
+        // --- [수정] Speech Recognition API -> MediaRecorder API로 변경 ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        async function startRecording(quizIndex) {
+            if (isRecording) return;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Votre navigateur ne supporte pas l'enregistrement audio.");
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                isRecording = true;
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstart = () => {
+                    const micBtn = document.querySelector(`#mic-btn-${quizIndex}`);
+                    if(micBtn) micBtn.classList.add('recording');
+                    const transcriptEl = document.querySelector(`#transcript-${quizIndex}`);
+                    if(transcriptEl) transcriptEl.textContent = "J'écoute...";
+                };
+
+                mediaRecorder.onstop = () => {
+                    isRecording = false;
+                    const micBtn = document.querySelector(`#mic-btn-${quizIndex}`);
+                    if(micBtn) {
+                        micBtn.classList.remove('recording');
+                        micBtn.classList.add('loading'); // 로딩 상태 추가
+                    }
+                    const transcriptEl = document.querySelector(`#transcript-${quizIndex}`);
+                    if(transcriptEl) transcriptEl.textContent = "Évaluation en cours...";
+
+                    // 오디오를 Base64로 변환
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' }); // Naver는 wav, mp3, ogg 등 지원
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result;
+                        // Base64 데이터를 백엔드로 전송
+                        handlePronunciationEvaluation(quizIndex, base64Audio);
+                    };
+                    
+                    // 스트림 중지
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                
+            } catch (err) {
+                console.error("Error starting recording:", err);
+                alert("Impossible d'accéder au microphone. Veuillez autoriser l'accès.");
+            }
+        }
+
+        function stopRecording(quizIndex) {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+            }
+        }
+        
+        // --- [신규] Naver API 호출 및 결과 처리 ---
+        async function handlePronunciationEvaluation(quizIndex, audioBase64) {
+            const quiz = quizzes[quizIndex];
+            const page = document.querySelector(`#page-${currentPageIndex}`);
+            const feedbackEl = page.querySelector('.feedback-message');
+            const transcriptEl = page.querySelector(`#transcript-${quizIndex}`);
+            const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
+            const attemptsEl = page.querySelector(`#attempts-${quizIndex}`);
+
+            if (!recognitionAttempts[quizIndex]) recognitionAttempts[quizIndex] = 0;
+            recognitionAttempts[quizIndex]++;
+            
+            try {
+                // [수정] ID 체크 로직 삭제
+                // if (YOUR_NAVER_CLOVA_INTEGRATION_ID_HERE === "int_...") {
+                //     throw new Error("Veuillez définir 'YOUR_NAVER_CLOVA_INTEGRATION_ID_HERE' en haut du script.");
+                // }
+
+                // [수정] Base 44 백엔드 함수를 표준 fetch()로 호출합니다.
+                // 백엔드 함수 이름 "naverClovaSpeech"를 사용합니다.
+                const response = await fetch('/api/functions/naverClovaSpeech', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        audioBase64: audioBase64,
+                        languageCode: "ko-KR", // 백엔드 함수에 필요
+                        referenceText: quiz.answer
+                    })
+                });
+    
+                if (!response.ok) {
+                    // 백엔드에서 온 JSON 에러 메시지 파싱 시도
+                    let errorDetails = "Erreur inconnue";
+                    try {
+                        const errorResult = await response.json();
+                        errorDetails = errorResult.error || JSON.stringify(errorResult);
+                    } catch (e) {
+                        // JSON 파싱 실패 시 텍스트로 대체
+                        errorDetails = await response.text();
+                    }
+                    throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
+                }
+    
+                const result = await response.json();
+
+                if (!result || typeof result.score === 'undefined') {
+                    throw new Error("Réponse invalide du backend: " + JSON.stringify(result));
+                }
+
+                // 1. 인식된 텍스트 표시
+                if (transcriptEl) transcriptEl.textContent = `"${result.transcribedText || '...'}"`;
+
+                // 2. 점수 계산 (Naver 90점 이상 2점, 70점 이상 1점)
+                let newScore = 0;
+                if (result.score >= 90) {
+                    newScore = 2; // 1차 시도
+                } else if (result.score >= 70) {
+                    newScore = 1; // 1차 시도
+                }
+                // (3회 시도 내 최고 점수 기록)
+                if (scores[quizIndex] === null || newScore > scores[quizIndex]) {
+                    scores[quizIndex] = newScore;
+                }
+
+                // 3. [요청사항 수정] 내부 피드백 텍스트 제거
+                // feedbackEl.textContent = ... (삭제)
+                if (feedbackEl) feedbackEl.textContent = ''; // 항상 비움
+
+                if (newScore > 0) {
+                    correctSound?.triggerAttackRelease('C5', '0.2s');
+                } else {
+                    wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                }
+
+                // 4. [요청사항] 점수와 피드백을 부모(Parent) 페이지로 전송
+                window.parent.postMessage({
+                    type: 'pronunciation_result',
+                    quizId: quizIndex,
+                    score: result.score, // Naver 원점수 (0-100)
+                    pointsAwarded: newScore, // 퀴즈 점수 (0, 1, 2)
+                    transcribedText: result.transcribedText,
+                    referenceText: quiz.answer,
+                    feedback: result.feedback // 백엔드에서 생성된 피드백
+                }, '*');
+
+                // 5. 시도 횟수 관리
+                if (newScore < 2 && recognitionAttempts[quizIndex] >= 3) {
+                    // 3회 시도 후 90점 미만이면 0점 처리 (이미 newScore가 0 또는 1임)
+                    scores[quizIndex] = Math.max(0, scores[quizIndex] || 0); // null이면 0점으로 확정
+                    feedbackEl.textContent = `La bonne réponse est : "${quiz.answer}"`;
+                    passerBtn.classList.remove('hidden'); // 다음으로 넘어가기 버튼
+                    if(micBtn) micBtn.disabled = true;
+                }
+
+            } catch (error) {
+                console.error("Erreur lors de l'évaluation:", error);
+                if(feedbackEl) {
+                    feedbackEl.textContent = "Erreur de connexion. Veuillez réessayer.";
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                }
+                // 에러 발생 시 시도 횟수 롤백
+                recognitionAttempts[quizIndex]--; 
+            } finally {
+                // 6. UI 업데이트
+                if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 3 - recognitionAttempts[quizIndex])}`;
+                if(micBtn) micBtn.classList.remove('loading');
+                updateNavigation(currentPageIndex);
+            }
+        }
+        
+        // --- Quiz Data ---
+        const quizzes = [
+            // Speech Recognition 1-5
+            { type: 'speech', answer: '안녕하세요', fr: 'Bonjour', audio: 'annyeonghaseyo' },
+            { type: 'speech', answer: '안녕히 가세요', fr: 'Partez bien', audio: 'annyeonghi-gaseyo' },
+            { type: 'speech', answer: '감사합니다', fr: 'Merci', audio: 'gamsahamnida' },
+            { type: 'speech', answer: '죄송합니다', fr: 'Désolé', audio: 'joesonghamnida' },
+            { type: 'speech', answer: '안녕히 계세요', fr: 'Restez bien', audio: 'annyeonghi-gyeseyo' },
+            // MCQ 6-10
+            { type: 'mcq', questionAudio: 'annyeonghaseyo', answer: 'Bonjour', options: ['Bonjour', 'Au revoir', 'Merci', 'Désolé'] },
+            { type: 'mcq', questionAudio: 'annyeonghi-gaseyo', answer: 'Partez bien', options: ['Bonjour', 'Partez bien', 'Désolé', 'Restez bien'] },
+            { type: 'mcq', questionAudio: 'gamsahamnida', answer: 'Merci', options: ['Désolé', 'Bonjour', 'Merci', 'Au revoir'] },
+            { type: 'mcq', questionAudio: 'joesonghamnida', answer: 'Désolé', options: ['Bonjour', 'Partez bien', 'Désolé', 'Restez bien'] },
+            { type: 'mcq', questionAudio: 'annyeonghi-gyeseyo', answer: 'Restez bien', options: ['Restez bien', 'Partez bien', 'Bonjour', 'Merci'] },
+            // Speech Recognition 11-15
+            { type: 'speech-fr', answer: '안녕하세요', fr: 'Bonjour' },
+            { type: 'speech-fr', answer: '감사합니다', fr: 'Merci' },
+            { type: 'speech-fr', answer: '죄송합니다', fr: 'Désolé' },
+            { type: 'speech-fr', answer: '안녕히 계세요', fr: 'Restez bien' },
+            { type: 'speech-fr', answer: '안녕히 가세요', fr: 'Partez bien' },
+        ];
+
+        // --- Quiz Generation ---
+        function generateQuizPage(quizIndex) {
+            const quiz = quizzes[quizIndex];
+            const page = document.querySelector(`.page[data-quiz-index="${quizIndex}"]`);
+            if (!page) return;
+
+            let content = '';
+            // [수정] 모든 텍스트, 버튼, 여백에 반응형 클래스 적용
+            if (quiz.type === 'speech') {
+                content = `
+                    <button onclick="playAudio('${quiz.audio}')" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-800 bg-sky-100 px-4 py-2 sm:px-6 sm:py-4 rounded-2xl hover:bg-sky-200 transition-colors">${quiz.answer}</button>
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-sky-600 mt-2 sm:mt-4 mb-4 sm:mb-6">${quiz.fr}</div>
+                    <p class="text-base sm:text-lg lg:text-xl text-slate-600 mb-2 leading-relaxed">Répétez la phrase.</p>
+                `;
+            } else if (quiz.type === 'speech-fr') {
+                content = `
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-700 mb-4 sm:mb-6">" ${quiz.fr} "</div>
+                    <p class="text-base sm:text-lg lg:text-xl text-slate-600 mb-2 sm:mb-4 leading-relaxed">Dites-le en coréen.</p>
+                `;
+            } else if (quiz.type === 'mcq') {
+                const optionsHTML = quiz.options.map((opt, i) => `
+                    <div class="quiz-option">
+                        <input type="radio" name="q${quizIndex}" value="${opt}" id="q${quizIndex}o${i}" class="hidden">
+                        <label for="q${quizIndex}o${i}" class="block cursor-pointer py-2 px-3 sm:py-3 sm:px-4 border-2 border-slate-200 rounded-lg text-base sm:text-lg lg:text-xl font-bold">${opt}</label>
+                    </div>
+                `).join('');
+                content = `
+                    <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-2 leading-relaxed">Que signifie cette phrase ?</h2>
+                    <button onclick="playAudio('${quiz.questionAudio}')" class="mb-2 text-4xl sm:text-5xl hover:opacity-75 transition-opacity">
+                        🔈
+                    </button>
+                    <form id="quiz-form-${quizIndex}" class="w-full max-w-lg px-4">
+                        <div class="space-y-2">${optionsHTML}</div>
+                        <div class="feedback-message text-base sm:text-xl"></div>
+                        <button type="submit" class="w-full mt-2 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-5 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                    </form>
+                `;
+            }
+            
+            if (quiz.type.startsWith('speech')) {
+                content += `
+                    <button id="mic-btn-${quizIndex}" class="mic-btn my-2 sm:my-4 bg-sky-500 text-white rounded-full text-4xl sm:text-5xl flex justify-center items-center w-16 h-16 sm:w-20 sm:h-20 hover:bg-sky-600">
+                        🎙️
+                    </button>
+                    <div id="transcript-${quizIndex}" class="text-base sm:text-xl lg:text-2xl text-slate-500 h-8"></div>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <div id="attempts-${quizIndex}" class="text-xs sm:text-sm text-slate-400 mt-2">Tentatives restantes : 3</div>
+                `;
+            }
+
+            page.innerHTML = content;
+        }
+        
+        quizzes.forEach((_, i) => generateQuizPage(i));
+
+        // --- Page Management ---
+        const showPage = (index) => {
+            pages.forEach((page, i) => page.classList.toggle('active', i === index));
+            updateNavigation(index);
+            updateProgressBar(index);
+            if (index === totalPages - 1) { // 마지막 페이지 (16)
+                calculateAndShowScore();
+                // [요청 사항] 레슨 완료 postMessage
+                window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                console.log('Lesson complete message sent to parent.');
+            }
+        };
+
+        const updateNavigation = (index) => {
+            prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+            nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+            passerBtn.classList.add('hidden');
+            retryBtn.classList.add('hidden');
+            
+            const quizIndex = pages[index].dataset.quizIndex;
+            if (quizIndex !== undefined) {
+                const isAnswered = scores[quizIndex] !== null;
+                nextBtn.classList.toggle('hidden', !isAnswered);
+
+                // [수정] 시도 횟수 초과 및 오답 시 'Passer' 버튼 표시
+                if (recognitionAttempts[quizIndex] >= 3 && (scores[quizIndex] === 0 || scores[quizIndex] === 1)) {
+                    passerBtn.classList.remove('hidden');
+                    nextBtn.classList.add('hidden'); // 'Passer'가 'Next'를 대신함
+                }
+                
+                // MCQ 오답 시 'Retry' 버튼 표시
+                const quiz = quizzes[quizIndex];
+                if (quiz.type === 'mcq' && scores[quizIndex] === 0) {
+                     retryBtn.classList.remove('hidden');
+                }
+            } else {
+                nextBtn.classList.remove('hidden');
+            }
+        };
+
+        const updateProgressBar = (index) => {
+            progressBar.style.width = `${((index + 1) / totalPages) * 100}%`;
+        };
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentPageIndex < totalPages - 1) {
+                pageTurnSound?.triggerAttackRelease('A5', '0.05s');
+                currentPageIndex++;
+                showPage(currentPageIndex);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentPageIndex > 0) {
+                pageTurnSound?.triggerAttackRelease('G5', '0.05s');
+                currentPageIndex--;
+                showPage(currentPageIndex);
+            }
+        });
+
+        passerBtn.addEventListener('click', () => {
+             const quizIndex = pages[currentPageIndex].dataset.quizIndex;
+             if (scores[quizIndex] === null) scores[quizIndex] = 0; // 점수 0점으로 확정
+             if (currentPageIndex < totalPages - 1) {
+                  currentPageIndex++;
+                  showPage(currentPageIndex);
+             }
+        });
+        
+        retryBtn.addEventListener('click', () => {
+            const quizIndex = parseInt(pages[currentPageIndex].dataset.quizIndex);
+            scores[quizIndex] = null; // Reset score to unanswered
+            const quiz = quizzes[quizIndex];
+
+            if (quiz.type === 'mcq') {
+                 const form = document.querySelector(`#quiz-form-${quizIndex}`);
+                 if (form) {
+                     form.reset();
+                     const radios = form.querySelectorAll('input[type="radio"]');
+                     radios.forEach(r => r.disabled = false);
+                     form.querySelector('.feedback-message').textContent = '';
+                     form.querySelector('button[type=submit]').classList.remove('hidden');
+                 }
+            } 
+            // [수정] Speech 퀴즈는 'Passer' 버튼만 있으므로 retry 로직은 MCQ에만 해당
+            // else if (quiz.type.startsWith('speech')) { ... }
+
+            retryBtn.classList.add('hidden');
+            passerBtn.classList.add('hidden');
+            updateNavigation(currentPageIndex);
+        });
+        
+        // --- Quiz Handlers ---
+        
+        // [수정] Speech Recognition (MediaRecorder)
+        document.querySelectorAll('.speech-quiz-page').forEach(page => {
+            const quizIndex = parseInt(page.dataset.quizIndex);
+            const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
+            
+            if (micBtn) {
+                micBtn.addEventListener('click', () => {
+                    if (!recognitionAttempts[quizIndex]) recognitionAttempts[quizIndex] = 0;
+                    if (recognitionAttempts[quizIndex] >= 3) return; // 시도 횟수 초과
+                    
+                    if (isRecording) {
+                        stopRecording(quizIndex);
+                    } else {
+                        initAudioSynth(); // 오디오 컨텍스트 활성화
+                        startRecording(quizIndex);
+                    }
+                });
+            }
+        });
+
+        // [수정] Multiple Choice
+        document.querySelectorAll('.mcq-quiz-page').forEach(page => {
+            const quizIndex = parseInt(page.dataset.quizIndex);
+            const form = page.querySelector(`#quiz-form-${quizIndex}`);
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const userAnswer = formData.get(`q${quizIndex}`);
+                    const feedbackEl = form.querySelector('.feedback-message');
+                    
+                    if (!userAnswer) {
+                        feedbackEl.textContent = "Veuillez sélectionner une réponse.";
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-yellow-500';
+                        return;
+                    }
+                    
+                    form.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+                    form.querySelector('button[type=submit]').classList.add('hidden');
+                    
+                    if (userAnswer === quizzes[quizIndex].answer) {
+                        scores[quizIndex] = 2; // MCQ는 정답 시 2점
+                        feedbackEl.textContent = 'Correct !';
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
+                        correctSound?.triggerAttackRelease('C5', '0.2s');
+                    } else {
+                        scores[quizIndex] = 0;
+                        feedbackEl.textContent = 'Incorrect.';
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        retryBtn.classList.remove('hidden');
+                    }
+                    updateNavigation(currentPageIndex);
+                });
+            }
+        });
+        
+        // --- Score Calculation ---
+        function calculateAndShowScore() {
+            const totalScore = scores.reduce((sum, score) => sum + (score || 0), 0);
+            const maxScore = 30; // 스피치 10문제 * 2점 = 20점, MCQ 5문제 * 2점 = 10점
+            document.getElementById('final-score').textContent = `${totalScore} / ${maxScore}`;
+            
+            const messageEl = document.getElementById('evaluation-message');
+            const percentage = (totalScore / maxScore) * 100;
+
+            if (percentage >= 85) { // 25.5+
+                messageEl.textContent = "Très bien ! Passez à l'étape suivante et continuez à apprendre le coréen !";
+            } else if (percentage >= 66) { // 19.8+
+                messageEl.textContent = "Bien joué. Passez à l'étape suivante et continuez à apprendre le coréen !";
+            } else if (percentage >= 50) { // 15+
+                messageEl.textContent = "Bien joué. Améliorez votre coréen avec une pratique régulière !";
+            } else if (percentage >= 33) { // 9.9+
+                messageEl.textContent = "Bon travail. Améliorez votre coréen avec une pratique régulière !";
+            } else {
+                messageEl.textContent = "Bon travail. Que diriez-vous de revoir les phrases 1 à 5 ?";
+            }
+        }
+
+        // --- Initialisation ---
+        showPage(currentPageIndex);
+    });
+    </script>
+</body>
+</html>
