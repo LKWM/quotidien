@@ -158,17 +158,13 @@
         // --- API & Setup ---
         
         // [!!!] 님의 Base 44 앱 주소(Origin)로 수정했습니다.
-        // "https://coreeno.base44.app"이 님의 앱 주소가 맞는지 확인해주세요.
         const BASE_44_ORIGIN = "https://coreeno.base44.app"; 
 
-        // [!!!] 경고 메시지를 alert 대신 console.warn으로 변경했습니다.
         if (BASE_44_ORIGIN === "YOUR_BASE_44_APP_URL_HERE") {
-            // alert("Erreur critique: L'URL de l'application Base 44 n'est pas configurée dans le code HTML. L'API ne fonctionnera pas.");
             console.warn("Veuillez remplacer 'YOUR_BASE_44_APP_URL_HERE' par l'URL de votre application Base 44 (l'origine de la page de prévisualisation).");
         }
 
-        // [!!!] 이제 'https://coreeno.base44.app' + '/api/functions/naverClovaSpeech'로 올바른 URL이 생성됩니다.
-        const CLOVA_API_FUNCTION_URL = BASE_44_ORIGIN + '/functions/naverClovaSpeech';
+        const CLOVA_API_FUNCTION_URL = BASE_44_ORIGIN + '/api/functions/naverClovaSpeech';
 
 
         const totalPages = 17; // 0-16
@@ -311,7 +307,7 @@
             try {
                 const response = await fetch(CLOVA_API_FUNCTION_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }, 
+                    headers: { 'Content-Type': 'application/json' }, // 405 오류 수정을 위해 text/plain -> application/json
                     body: JSON.stringify({ 
                         audioBase64: audioBase64,
                         languageCode: "Kor", 
@@ -334,10 +330,13 @@
                 
                 const result = await response.json(); 
                 
+                // 스크린샷(3:49:22 AM)을 보면, 백엔드가 Naver 점수를 `naverScore`로 반환하고 있습니다.
+                // assessment.pronunciation_score 대신 `naverScore`를 사용합니다.
                 const sttResult = result.raw || result; 
                 
                 const transcribedText = sttResult.text || '';
-                const score = sttResult.assessment_score || (sttResult.assessment ? sttResult.assessment.pronunciation_score : 0) || 0;
+                // [!!!] 님의 스크린샷 `naverScore` (0-100)를 사용합니다.
+                const score = sttResult.naverScore || sttResult.score || (sttResult.assessment ? sttResult.assessment.pronunciation_score : 0) || 0;
 
                 if (transcriptEl) transcriptEl.textContent = `"${transcribedText || '...'}"`;
 
@@ -345,34 +344,43 @@
                 const normalizedReference = normalizeText(quiz.answer);
                 
                 const isTextMatch = (normalizedTranscribed === normalizedReference);
-                const isScorePass = score >= 85;
+                // [!!!] 님의 새 요청: 95점 컷
+                const isScorePass = score >= 95;
                 
                 const isCorrect = isTextMatch && isScorePass; 
                 let earnedPoints = 0;
 
                 if (isCorrect) {
-                    earnedPoints = isFirstAttempt ? 2 : 1;
+                    earnedPoints = isFirstAttempt ? 2 : 1; 
                     scores[quizIndex] = earnedPoints;
                     correctSound?.triggerAttackRelease('C5', '0.2s');
                     if(micBtn) micBtn.disabled = true;
                     passerBtn.classList.add('hidden'); 
                     retryBtn.classList.add('hidden');
-                    if(feedbackEl) feedbackEl.textContent = ""; 
+                    // [!!!] 님의 요청: 95점 이상일 때 프랑스어 피드백 + 점수
+                    if(feedbackEl) {
+                        feedbackEl.textContent = `Très bien ! (Score: ${score} / 100)`;
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
+                    }
 
                 } else {
+                    // [!!!] 님의 새 요청: 95점 미만이거나 텍스트가 틀리면 (1차 시도)
                     if (isFirstAttempt) {
                         scores[quizIndex] = null; 
                         wrongSound?.triggerAttackRelease('A#2', '0.2s');
                         if(attemptsEl) attemptsEl.textContent = "Tentatives restantes : 1";
                         if(feedbackEl) {
-                             feedbackEl.textContent = ""; 
+                             // [!!!] 님의 요청: 프랑스어 피드백 메시지 수정 + 점수
+                             feedbackEl.textContent = `Écoutez et parlez à nouveau. (Score: ${score} / 100)`; 
                              feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                         }
                     } else {
+                    // 2차 시도 실패
                         scores[quizIndex] = 0;
                         wrongSound?.triggerAttackRelease('A#2', '0.2s');
                         if(feedbackEl) {
-                             feedbackEl.textContent = `La bonne réponse est : "${quiz.answer}"`;
+                             // 2차 실패 시에는 정답 + 점수 표시
+                             feedbackEl.textContent = `Réponse: "${quiz.answer}" (Votre score: ${score} / 100)`;
                              feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                         }
                         if(micBtn) micBtn.disabled = true;
@@ -381,11 +389,12 @@
                     }
                 }
 
+                // 부모 페이지로 원본 데이터 전송 (스크린샷과 동일한 형식)
                 window.parent.postMessage({
                     type: 'pronunciation_result',
                     quizId: quizIndex,
-                    naverScore: score,
-                    pointsAwarded: earnedPoints,
+                    naverScore: score, // Naver 원점수 (0-100)
+                    pointsAwarded: earnedPoints, // 획득 점수 (0, 1, 2)
                     transcribedText: transcribedText,
                     referenceText: quiz.answer,
                     isCorrect: isCorrect,
