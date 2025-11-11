@@ -156,14 +156,14 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         // --- API & Setup ---
-        // [!!] 님이 Base 44에서 생성한 백엔드 함수의 이름을 여기에 정확히 입력하세요.
-        // 에이전트가 "naverClovaSpeech"라고 했으므로, 이 이름을 사용합니다.
-        const CLOVA_API_FUNCTION_URL = '/api/functions/naverClovaSpeech';
+        // [!!!] URL Parse 오류 수정:
+        // blob: URL에서 /api/... 같은 상대 경로를 fetch가 인식하지 못하므로,
+        // window.location.origin을 사용해 절대 경로를 만듭니다.
+        const CLOVA_API_FUNCTION_URL = window.location.origin + '/api/functions/naverClovaSpeech';
 
         const totalPages = 17; // 0-16
         let currentPageIndex = 0;
         let scores = Array(15).fill(null); // 15개의 퀴즈 (0-14)
-        // [수정] 1, 2회차 시도를 기록 (85점 컷)
         let recognitionAttempts = {}; 
         let soundsReady = false;
 
@@ -230,7 +230,6 @@
                     const transcriptEl = document.querySelector(`#transcript-${quizIndex}`);
                     if(transcriptEl) transcriptEl.textContent = "J'écoute...";
 
-                    // 10초 녹음 제한
                     clearTimeout(recordingTimeout);
                     recordingTimeout = setTimeout(() => {
                         if (isRecording) {
@@ -283,7 +282,6 @@
         // 텍스트 정규화 함수 (비교용)
         function normalizeText(text) {
             if (typeof text !== 'string') return '';
-            // 띄어쓰기, 구두점(.,!?) 제거
             return text.trim().replace(/[.,!?'\s]/g, '');
         }
         
@@ -311,72 +309,61 @@
                     })
                 });
     
+                // [!!!] "body stream already read" 오류를 방지하는 로직
                 if (!response.ok) {
                     let errorDetails = "Erreur inconnue";
+                    const errorText = await response.text(); 
+                    
                     try {
-                        const errorResult = await response.json();
+                        const errorResult = JSON.parse(errorText); 
                         errorDetails = errorResult.error || JSON.stringify(errorResult);
                     } catch (e) {
-                        errorDetails = await response.text();
+                        errorDetails = errorText; 
                     }
+                    // `fetch` 자체의 URL 파싱 에러를 잡기 위해 `Error.stack`을 확인합니다.
                     throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
                 }
-    
-                // [수정] 백엔드가 반환하는 raw 데이터를 파싱합니다.
-                // 에이전트가 반환한다고 한: { success: true, text: "...", assessment: {...}, raw: {...} }
-                // Naver 문서(12.40.51 AM.jpg)에는 `assessment_score`가 루트에 있습니다.
-                // 에이전트의 `naverClovaSpeech.js`가 Naver의 `sttResult`를 `raw` 객체에 담아 반환한다고 가정합니다.
+                
                 const result = await response.json(); 
                 
-                // [수정] 에이전트가 반환한다는 `result.raw` 객체에서 점수와 텍스트를 추출
-                const sttResult = result.raw || result; // 백엔드가 raw를 제공 안하면 result 자체를 사용
+                const sttResult = result.raw || result; 
                 
                 const transcribedText = sttResult.text || '';
-                const score = sttResult.assessment_score || 0; // (0-100)
+                const score = sttResult.assessment_score || (sttResult.assessment ? sttResult.assessment.pronunciation_score : 0) || 0;
 
-                // 2. 인식된 텍스트 표시
                 if (transcriptEl) transcriptEl.textContent = `"${transcribedText || '...'}"`;
 
-                // 3. [신규] 정답 확인: (a) 텍스트 일치 (b) 점수 85점 이상
                 const normalizedTranscribed = normalizeText(transcribedText);
                 const normalizedReference = normalizeText(quiz.answer);
                 
                 const isTextMatch = (normalizedTranscribed === normalizedReference);
                 const isScorePass = score >= 85;
                 
-                // 텍스트가 일치하고, 점수가 85점 이상이어야 통과
                 const isCorrect = isTextMatch && isScorePass; 
-                // "아예 다른 글자로 인식된 경우" -> isTextMatch가 false인 경우
-
                 let earnedPoints = 0;
 
-                // 4. [신규] 점수 및 UI 로직 (85점 기준)
                 if (isCorrect) {
-                    earnedPoints = isFirstAttempt ? 2 : 1; // 1차 2점, 2차 1점
+                    earnedPoints = isFirstAttempt ? 2 : 1;
                     scores[quizIndex] = earnedPoints;
                     correctSound?.triggerAttackRelease('C5', '0.2s');
                     if(micBtn) micBtn.disabled = true;
                     passerBtn.classList.add('hidden'); 
                     retryBtn.classList.add('hidden');
-                    if(feedbackEl) feedbackEl.textContent = ""; // [수정] 피드백 중복 제거
+                    if(feedbackEl) feedbackEl.textContent = ""; 
 
                 } else {
-                    // 1차 시도 실패 (재시도 기회)
                     if (isFirstAttempt) {
-                        scores[quizIndex] = null; // 아직 점수 없음 (재시도 가능)
+                        scores[quizIndex] = null; 
                         wrongSound?.triggerAttackRelease('A#2', '0.2s');
                         if(attemptsEl) attemptsEl.textContent = "Tentatives restantes : 1";
                         if(feedbackEl) {
-                             // [수정] 피드백 중복 제거
                              feedbackEl.textContent = ""; 
                              feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                         }
                     } else {
-                    // 2차 시도 실패 (0점 처리)
                         scores[quizIndex] = 0;
                         wrongSound?.triggerAttackRelease('A#2', '0.2s');
                         if(feedbackEl) {
-                             // [수정] 2회 실패 시에만 정답 표시
                              feedbackEl.textContent = `La bonne réponse est : "${quiz.answer}"`;
                              feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                         }
@@ -386,29 +373,27 @@
                     }
                 }
 
-                // 5. [요청사항] 점수와 피드백을 부모(Parent) 페이지로 전송
                 window.parent.postMessage({
                     type: 'pronunciation_result',
                     quizId: quizIndex,
-                    naverScore: score, // Naver 원점수 (0-100)
-                    pointsAwarded: earnedPoints, // 획득 점수 (0, 1, 2)
+                    naverScore: score,
+                    pointsAwarded: earnedPoints,
                     transcribedText: transcribedText,
                     referenceText: quiz.answer,
                     isCorrect: isCorrect,
                     attempt: recognitionAttempts[quizIndex],
-                    // [수정] 에이전트의 최신 정보를 반영하여 Naver 원본 assessment 객체(또는 점수) 전송
-                    assessment: sttResult.assessment || { pronunciation: score } // Naver가 assessment 객체를 안주면 점수라도 보냄
+                    assessment: sttResult.assessment || { pronunciation_score: score }
                 }, '*');
 
             } catch (error) {
-                console.error("Erreur lors de l'évaluation:", error);
+                console.error("Erreur lors de l'évaluation:", error); // 에러 로그에 자세한 내용 표시
                 if(feedbackEl) {
-                    feedbackEl.textContent = "Erreur de connexion. Veuillez réessayer.";
+                    // 에러 로그에 `fetch`의 URL 파싱 에러가 포함되도록 메시지 수정
+                    feedbackEl.textContent = `Erreur de connexion. ${error.message.includes('Failed to parse') ? 'URL invalide.' : 'Veuillez réessayer.'}`;
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                 }
                 if (recognitionAttempts[quizIndex] > 0) recognitionAttempts[quizIndex]--; 
             } finally {
-                // 6. UI 업데이트
                 if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 2 - recognitionAttempts[quizIndex])}`;
                 if(micBtn) micBtn.classList.remove('loading');
                 updateNavigation(currentPageIndex);
@@ -482,7 +467,6 @@
                     </button>
                     <div id="transcript-${quizIndex}" class="text-base sm:text-xl lg:text-2xl text-slate-500 h-8"></div>
                     <div class="feedback-message text-base sm:text-xl h-8 sm:h-10"></div>
-                    <!-- [수정] 2회 시도로 변경 -->
                     <div id="attempts-${quizIndex}" class="text-xs sm:text-sm text-slate-400 mt-2">Tentatives restantes : 2</div>
                 `;
             }
@@ -499,7 +483,6 @@
             updateProgressBar(index);
             if (index === totalPages - 1) { // 마지막 페이지 (16)
                 calculateAndShowScore();
-                // [요청 사항] 레슨 완료 postMessage
                 window.parent.postMessage({ type: 'lesson_complete' }, '*');
                 console.log('Lesson complete message sent to parent.');
             }
@@ -518,13 +501,11 @@
 
                 const quiz = quizzes[quizIndex];
                 
-                // [수정] 2회 시도 실패 시 'Passer' 버튼 표시
                 if (quiz.type.startsWith('speech') && recognitionAttempts[quizIndex] >= 2 && scores[quizIndex] === 0) {
                     passerBtn.classList.remove('hidden');
-                    nextBtn.classList.add('hidden'); // 'Passer'가 'Next'를 대신함
+                    nextBtn.classList.add('hidden'); 
                 }
                 
-                // MCQ 오답 시 'Retry' 버튼 표시
                 if (quiz.type === 'mcq' && scores[quizIndex] === 0) {
                      retryBtn.classList.remove('hidden');
                 }
@@ -555,7 +536,7 @@
 
         passerBtn.addEventListener('click', () => {
              const quizIndex = pages[currentPageIndex].dataset.quizIndex;
-             if (scores[quizIndex] === null) scores[quizIndex] = 0; // 점수 0점으로 확정
+             if (scores[quizIndex] === null) scores[quizIndex] = 0; 
              if (currentPageIndex < totalPages - 1) {
                   currentPageIndex++;
                   showPage(currentPageIndex);
@@ -563,12 +544,11 @@
         });
         
         retryBtn.addEventListener('click', () => {
-            // [수정] 이 버튼은 MCQ 전용임
             const quizIndex = parseInt(pages[currentPageIndex].dataset.quizIndex);
             const quiz = quizzes[quizIndex];
             
             if (quiz.type === 'mcq') {
-                 scores[quizIndex] = null; // Reset score to unanswered
+                 scores[quizIndex] = null; 
                  const form = document.querySelector(`#quiz-form-${quizIndex}`);
                  if (form) {
                      form.reset();
@@ -586,7 +566,7 @@
         
         // --- Quiz Handlers ---
         
-        // [수정] Speech Recognition (MediaRecorder)
+        // Speech Recognition (MediaRecorder)
         document.querySelectorAll('.speech-quiz-page').forEach(page => {
             const quizIndex = parseInt(page.dataset.quizIndex);
             const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
@@ -596,27 +576,26 @@
                     if (micBtn.disabled || micBtn.classList.contains('loading')) return;
 
                     if (!recognitionAttempts[quizIndex]) recognitionAttempts[quizIndex] = 0;
-                    // [수정] 2회 시도 제한
                     if (recognitionAttempts[quizIndex] >= 2 && scores[quizIndex] === null) return; 
                     
                     if (isRecording) {
                         stopRecording(quizIndex);
                     } else {
-                        initAudioSynth(); // 오디오 컨텍스트 활성화 (클릭 시)
+                        initAudioSynth(); 
                         startRecording(quizIndex);
                     }
                 });
             }
         });
 
-        // [수정] Multiple Choice
+        // Multiple Choice
         document.querySelectorAll('.mcq-quiz-page').forEach(page => {
             const quizIndex = parseInt(page.dataset.quizIndex);
             const form = page.querySelector(`#quiz-form-${quizIndex}`);
             if(form) {
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
-                    initAudioSynth(); // 사운드 초기화
+                    initAudioSynth(); 
                     const formData = new FormData(form);
                     const userAnswer = formData.get(`q${quizIndex}`);
                     const feedbackEl = form.querySelector('.feedback-message');
@@ -631,7 +610,7 @@
                     form.querySelector('button[type=submit]').classList.add('hidden');
                     
                     if (userAnswer === quizzes[quizIndex].answer) {
-                        scores[quizIndex] = 2; // MCQ는 정답 시 2점
+                        scores[quizIndex] = 2; 
                         feedbackEl.textContent = 'Correct !';
                         feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
                         correctSound?.triggerAttackRelease('C5', '0.2s');
@@ -649,7 +628,6 @@
         
         // --- Score Calculation ---
         function calculateAndShowScore() {
-            // [수정] 스피치 10문제 (최대 2점), MCQ 5문제 (2점) = 20 + 10 = 30점 만점
             const totalScore = scores.reduce((sum, score) => sum + (score === null ? 0 : score), 0);
             const maxScore = 30;
             document.getElementById('final-score').textContent = `${totalScore} / ${maxScore}`;
