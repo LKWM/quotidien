@@ -307,7 +307,7 @@
             try {
                 const response = await fetch(CLOVA_API_FUNCTION_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }, // 405 오류 수정을 위해 text/plain -> application/json
+                    headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
                         audioBase64: audioBase64,
                         languageCode: "Kor", 
@@ -329,14 +329,12 @@
                 }
                 
                 const result = await response.json(); 
+
+                // [!!!] 수정: `result.raw`를 읽는 코드를 삭제하고, 백엔드가 반환하는 `result` 객체를 직접 사용합니다.
                 
-                // 스크린샷(3:49:22 AM)을 보면, 백엔드가 Naver 점수를 `naverScore`로 반환하고 있습니다.
-                // assessment.pronunciation_score 대신 `naverScore`를 사용합니다.
-                const sttResult = result.raw || result; 
-                
-                const transcribedText = sttResult.text || '';
-                // [!!!] 님의 스크린샷 `naverScore` (0-100)를 사용합니다.
-                const score = sttResult.naverScore || sttResult.score || (sttResult.assessment ? sttResult.assessment.pronunciation_score : 0) || 0;
+                const transcribedText = result.text || '';
+                // [!!!] 수정: 백엔드가 반환하는 `result.assessment.pronunciation_score`를 직접 읽습니다.
+                const score = (result.assessment ? result.assessment.pronunciation_score : 0) || 0;
 
                 if (transcriptEl) transcriptEl.textContent = `"${transcribedText || '...'}"`;
 
@@ -399,7 +397,8 @@
                     referenceText: quiz.answer,
                     isCorrect: isCorrect,
                     attempt: recognitionAttempts[quizIndex],
-                    assessment: sttResult.assessment || { pronunciation_score: score }
+                    // [!!!] 수정: 백엔드가 반환하는 `result.assessment` 객체를 그대로 전달
+                    assessment: result.assessment || { pronunciation_score: score }
                 }, '*');
 
             } catch (error) {
