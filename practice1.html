@@ -311,7 +311,7 @@
             try {
                 const response = await fetch(CLOVA_API_FUNCTION_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' }, 
+                    headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
                         audioBase64: audioBase64,
                         languageCode: "Kor", 
