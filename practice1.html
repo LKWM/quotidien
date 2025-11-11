@@ -1,120 +1,678 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coréen - Pratique Orale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Nanum Gothic', sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        .course-container {
+            width: 100%;
+            max-width: 1000px;
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .quiz-option input:checked + label {
+            background-color: #38bdf8;
+            color: white;
+            border-color: #0284c7;
+        }
+        .feedback-message {
+            min-height: 2.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .mic-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .mic-btn.recording {
+            transform: scale(1.1);
+            background-color: #ef4444; /* red-500 */
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
+        }
+        .mic-btn.loading {
+            background-color: #6b7280; /* gray-500 */
+            cursor: not-allowed;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .nav-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem; /* gap-4 */
+        }
+        @media (min-width: 640px) { /* sm: */
+            .nav-container {
+                padding: 1.5rem; /* sm:p-6 */
+            }
+        }
+        @media (min-width: 1024px) { /* lg: */
+            .nav-container {
+                padding: 2rem; /* lg:p-8 */
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen h-screen p-2 sm:p-4">
 
-// Base 44 백엔드 함수는 Deno 전역 객체를 사용하므로 import가 필요 없습니다.
-// import { Deno } from "deno"; 
+    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden h-full">
 
-Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
+        <!-- Audio elements -->
+        <audio id="audio-annyeonghaseyo" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gaseyo" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio>
+        <audio id="audio-gamsahamnida" src="https://static.wixstatic.com/mp3/699687_cbf26bae6c624aeabbe85140522122c7.mp3" preload="auto"></audio>
+        <audio id="audio-joesonghamnida" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gyeseyo" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio>
+        
+        <!-- Page content -->
+        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center overflow-auto pb-16 sm:pb-20">
 
-        // 1. 사용자 인증
-        const user = await base44.auth.me();
-        if (!user) {
-            return Response.json({ error: 'Non autorisé' }, { status: 401 });
+            <!-- Page 0: Title -->
+            <div id="page-0" class="page w-full h-full flex-col justify-center items-center">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-800">Pratique Orale</h1>
+                <p class="text-lg sm:text-xl lg:text-2xl text-slate-600 mt-2 sm:mt-4 leading-relaxed">Testez votre prononciation et votre compréhension.</p>
+            </div>
+
+            <!-- Speech Recognition Pages (1-5) -->
+            <div id="page-1" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="0"></div>
+            <div id="page-2" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="1"></div>
+            <div id="page-3" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="2"></div>
+            <div id="page-4" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="3"></div>
+            <div id="page-5" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="4"></div>
+            
+            <!-- Multiple Choice Pages (6-10) -->
+            <div id="page-6" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="5"></div>
+            <div id="page-7" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="6"></div>
+            <div id="page-8" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="7"></div>
+            <div id="page-9" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="8"></div>
+            <div id="page-10" class="page w-full h-full flex-col justify-center items-center mcq-quiz-page" data-quiz-index="9"></div>
+
+            <!-- Speech Recognition Pages (11-15) -->
+            <div id="page-11" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="10"></div>
+            <div id="page-12" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="11"></div>
+            <div id="page-13" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="12"></div>
+            <div id="page-14" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="13"></div>
+            <div id="page-15" class="page w-full h-full flex-col justify-center items-center speech-quiz-page" data-quiz-index="14"></div>
+            
+            <!-- Page 16: Final Score -->
+            <div id="page-16" class="page w-full h-full flex-col justify-center items-center">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800">Score Final</h2>
+                <p id="final-score" class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-sky-500 my-4 sm:my-6">0 / 30</p>
+                <p id="evaluation-message" class="text-base sm:text-xl lg:text-2xl text-slate-600 max-w-xl leading-relaxed"></p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-container">
+            <div class="justify-self-start">
+                <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+            </div>
+            
+            <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
+                <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
+            </div>
+            
+            <div class="justify-self-end flex gap-2">
+                <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
+                <button id="passer-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Passer</button>
+                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // --- Global Audio Player ---
+    function playAudio(id) {
+        const audio = document.getElementById(`audio-${id}`);
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play().catch(e => console.error("Audio play failed:", e));
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- API & Setup ---
+        // [!!] 님이 Base 44에서 생성한 백엔드 함수의 이름을 여기에 정확히 입력하세요.
+        // 에이전트가 "naverClovaSpeech"라고 했으므로, 이 이름을 사용합니다.
+        const CLOVA_API_FUNCTION_URL = '/api/functions/naverClovaSpeech';
+
+        const totalPages = 17; // 0-16
+        let currentPageIndex = 0;
+        let scores = Array(15).fill(null); // 15개의 퀴즈 (0-14)
+        // [수정] 1, 2회차 시도를 기록 (85점 컷)
+        let recognitionAttempts = {}; 
+        let soundsReady = false;
+
+        const pages = document.querySelectorAll('.page');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const passerBtn = document.getElementById('passer-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const progressBar = document.getElementById('progress-indicator');
+        
+        let correctSound, wrongSound, pageTurnSound, finishSound;
+        const initAudioSynth = async () => {
+            if (soundsReady) return;
+            try {
+                await Tone.start();
+                correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
+                wrongSound = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.2 } }).toDestination();
+                pageTurnSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+                finishSound = new Tone.PolySynth(Tone.Synth, { envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 1 } }).toDestination();
+                soundsReady = true;
+                console.log('Audio context started.');
+            } catch (e) {
+                console.error("Audio context could not be started: ", e);
+            }
+        };
+        document.body.addEventListener('click', initAudioSynth, { once: true });
+        document.body.addEventListener('touchstart', initAudioSynth, { once: true });
+        
+        // --- MediaRecorder (Naver API) ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingTimeout; // 10초 타임아웃
+
+        async function startRecording(quizIndex) {
+            if (isRecording) return;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Votre navigateur ne supporte pas l'enregistrement audio.");
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                isRecording = true;
+                audioChunks = [];
+                
+                let mimeType = 'audio/webm;codecs=opus';
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = 'audio/webm';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = '';
+                    }
+                }
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType }); 
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstart = () => {
+                    const micBtn = document.querySelector(`#mic-btn-${quizIndex}`);
+                    if(micBtn) micBtn.classList.add('recording');
+                    const transcriptEl = document.querySelector(`#transcript-${quizIndex}`);
+                    if(transcriptEl) transcriptEl.textContent = "J'écoute...";
+
+                    // 10초 녹음 제한
+                    clearTimeout(recordingTimeout);
+                    recordingTimeout = setTimeout(() => {
+                        if (isRecording) {
+                            stopRecording(quizIndex);
+                        }
+                    }, 10000); // 10초
+                };
+
+                mediaRecorder.onstop = () => {
+                    isRecording = false;
+                    clearTimeout(recordingTimeout);
+                    const micBtn = document.querySelector(`#mic-btn-${quizIndex}`);
+                    if(micBtn) {
+                        micBtn.classList.remove('recording');
+                        micBtn.classList.add('loading');
+                    }
+                    const transcriptEl = document.querySelector(`#transcript-${quizIndex}`);
+                    if(transcriptEl) transcriptEl.textContent = "Évaluation en cours...";
+
+                    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result;
+                        handlePronunciationEvaluation(quizIndex, base64Audio);
+                    };
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                
+            } catch (err) {
+                console.error("Error starting recording:", err);
+                if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+                    alert("Impossible d'accéder au microphone. Veuillez autoriser l'accès.");
+                } else {
+                    alert(`Erreur microphone: ${err.name}. Veuillez réessayer.`);
+                }
+            }
         }
 
-        // 2. 프론트엔드(HTML)에서 보낸 파라미터 추출
-        // (프론트에서 "Kor"를 보내므로 languageCode도 받습니다)
-        const { audioBase64, languageCode, referenceText } = await req.json();
-
-        if (!audioBase64 || !languageCode || !referenceText) {
-            return Response.json({ 
-                error: 'Paramètres manquants: audioBase64, languageCode et referenceText sont requis' 
-            }, { status: 400 });
+        function stopRecording(quizIndex) {
+            clearTimeout(recordingTimeout);
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+            }
         }
 
-        // 3. [수정] Base 44 Configuration 탭에 저장된 *하나*의 키를 읽어옵니다.
-        const clovaApiKey = Deno.env.get("Naver_Clova_API_KEY");
-
-        if (!clovaApiKey || !clovaApiKey.includes(':')) {
-            return Response.json({ 
-                error: "Clé API Naver Clova (Naver_Clova_API_KEY) non configurée ou au mauvais format (doit être CLIENT_ID:CLIENT_SECRET)" 
-            }, { status: 500 });
-        }
-
-        // [수정] 하나의 키를 ':' 기준으로 두 개로 분리합니다.
-        const [clientId, clientSecret] = clovaApiKey.split(':');
-
-        if (!clientId || !clientSecret) {
-            return Response.json({ 
-                error: "Format de clé API non valide. Assurez-vous qu'il s'agit de CLIENT_ID:CLIENT_SECRET"
-            }, { status: 500 });
-        }
-
-
-        // 4. [수정] API URL (https:// 사용)
-        const sttEndpoint = new URL("https://clovaspeech-gw.ncloud.com/recog/v1/stt");
-        sttEndpoint.searchParams.append("lang", languageCode); // 프론트에서 받은 "Kor" 사용
-        sttEndpoint.searchParams.append("assessment", "true");
-        sttEndpoint.searchParams.append("utterance", referenceText);
-
-        // 5. [수정] Base64 데이터에서 Data URI prefix 제거
-        const pureBase64 = audioBase64.split(',')[1] || audioBase64;
-        if (!pureBase64) {
-             return Response.json({ error: 'Format audioBase64 non valide' }, { status: 400 });
+        // 텍스트 정규화 함수 (비교용)
+        function normalizeText(text) {
+            if (typeof text !== 'string') return '';
+            // 띄어쓰기, 구두점(.,!?) 제거
+            return text.trim().replace(/[.,!?'\s]/g, '');
         }
         
-        // [수정] atob를 사용한 바이트 배열 변환 (Deno.core 대신)
-        // atob()는 Base64 문자열을 binary string으로 디코딩합니다.
-        const binaryString = atob(pureBase64);
-        // binary string을 Uint8Array(바이트 배열)로 변환합니다.
-        const audioData = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          audioData[i] = binaryString.charCodeAt(i);
-        }
+        // --- Naver API 호출 및 새 점수 로직 ---
+        async function handlePronunciationEvaluation(quizIndex, audioBase64) {
+            const quiz = quizzes[quizIndex];
+            const page = document.querySelector(`#page-${currentPageIndex}`);
+            const feedbackEl = page.querySelector('.feedback-message');
+            const transcriptEl = page.querySelector(`#transcript-${quizIndex}`);
+            const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
+            const attemptsEl = page.querySelector(`#attempts-${quizIndex}`);
 
-        // 6. [수정] Naver API 호출 (올바른 헤더 사용)
-        const response = await fetch(sttEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/octet-stream',
-                'X-NCP-APIGW-API-KEY-ID': clientId,     // <-- 올바른 헤더 1
-                'X-NCP-APIGW-API-KEY': clientSecret,  // <-- 올바른 헤더 2
-            },
-            body: audioData,
+            if (recognitionAttempts[quizIndex] === undefined) recognitionAttempts[quizIndex] = 0;
+            recognitionAttempts[quizIndex]++;
+            const isFirstAttempt = recognitionAttempts[quizIndex] === 1;
+            
+            try {
+                const response = await fetch(CLOVA_API_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        audioBase64: audioBase64,
+                        languageCode: "Kor", // 네이버 문서 기준 "Kor"
+                        referenceText: quiz.answer
+                    })
+                });
+    
+                if (!response.ok) {
+                    let errorDetails = "Erreur inconnue";
+                    try {
+                        const errorResult = await response.json();
+                        errorDetails = errorResult.error || JSON.stringify(errorResult);
+                    } catch (e) {
+                        errorDetails = await response.text();
+                    }
+                    throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
+                }
+    
+                // [수정] 백엔드가 반환하는 raw 데이터를 파싱합니다.
+                // 에이전트가 반환한다고 한: { success: true, text: "...", assessment: {...}, raw: {...} }
+                // Naver 문서(12.40.51 AM.jpg)에는 `assessment_score`가 루트에 있습니다.
+                // 에이전트의 `naverClovaSpeech.js`가 Naver의 `sttResult`를 `raw` 객체에 담아 반환한다고 가정합니다.
+                const result = await response.json(); 
+                
+                // [수정] 에이전트가 반환한다는 `result.raw` 객체에서 점수와 텍스트를 추출
+                const sttResult = result.raw || result; // 백엔드가 raw를 제공 안하면 result 자체를 사용
+                
+                const transcribedText = sttResult.text || '';
+                const score = sttResult.assessment_score || 0; // (0-100)
+
+                // 2. 인식된 텍스트 표시
+                if (transcriptEl) transcriptEl.textContent = `"${transcribedText || '...'}"`;
+
+                // 3. [신규] 정답 확인: (a) 텍스트 일치 (b) 점수 85점 이상
+                const normalizedTranscribed = normalizeText(transcribedText);
+                const normalizedReference = normalizeText(quiz.answer);
+                
+                const isTextMatch = (normalizedTranscribed === normalizedReference);
+                const isScorePass = score >= 85;
+                
+                // 텍스트가 일치하고, 점수가 85점 이상이어야 통과
+                const isCorrect = isTextMatch && isScorePass; 
+                // "아예 다른 글자로 인식된 경우" -> isTextMatch가 false인 경우
+
+                let earnedPoints = 0;
+
+                // 4. [신규] 점수 및 UI 로직 (85점 기준)
+                if (isCorrect) {
+                    earnedPoints = isFirstAttempt ? 2 : 1; // 1차 2점, 2차 1점
+                    scores[quizIndex] = earnedPoints;
+                    correctSound?.triggerAttackRelease('C5', '0.2s');
+                    if(micBtn) micBtn.disabled = true;
+                    passerBtn.classList.add('hidden'); 
+                    retryBtn.classList.add('hidden');
+                    if(feedbackEl) feedbackEl.textContent = ""; // [수정] 피드백 중복 제거
+
+                } else {
+                    // 1차 시도 실패 (재시도 기회)
+                    if (isFirstAttempt) {
+                        scores[quizIndex] = null; // 아직 점수 없음 (재시도 가능)
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        if(attemptsEl) attemptsEl.textContent = "Tentatives restantes : 1";
+                        if(feedbackEl) {
+                             // [수정] 피드백 중복 제거
+                             feedbackEl.textContent = ""; 
+                             feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                        }
+                    } else {
+                    // 2차 시도 실패 (0점 처리)
+                        scores[quizIndex] = 0;
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        if(feedbackEl) {
+                             // [수정] 2회 실패 시에만 정답 표시
+                             feedbackEl.textContent = `La bonne réponse est : "${quiz.answer}"`;
+                             feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                        }
+                        if(micBtn) micBtn.disabled = true;
+                        passerBtn.classList.remove('hidden'); 
+                        retryBtn.classList.add('hidden');
+                    }
+                }
+
+                // 5. [요청사항] 점수와 피드백을 부모(Parent) 페이지로 전송
+                window.parent.postMessage({
+                    type: 'pronunciation_result',
+                    quizId: quizIndex,
+                    naverScore: score, // Naver 원점수 (0-100)
+                    pointsAwarded: earnedPoints, // 획득 점수 (0, 1, 2)
+                    transcribedText: transcribedText,
+                    referenceText: quiz.answer,
+                    isCorrect: isCorrect,
+                    attempt: recognitionAttempts[quizIndex],
+                    // [수정] 에이전트의 최신 정보를 반영하여 Naver 원본 assessment 객체(또는 점수) 전송
+                    assessment: sttResult.assessment || { pronunciation: score } // Naver가 assessment 객체를 안주면 점수라도 보냄
+                }, '*');
+
+            } catch (error) {
+                console.error("Erreur lors de l'évaluation:", error);
+                if(feedbackEl) {
+                    feedbackEl.textContent = "Erreur de connexion. Veuillez réessayer.";
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                }
+                if (recognitionAttempts[quizIndex] > 0) recognitionAttempts[quizIndex]--; 
+            } finally {
+                // 6. UI 업데이트
+                if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 2 - recognitionAttempts[quizIndex])}`;
+                if(micBtn) micBtn.classList.remove('loading');
+                updateNavigation(currentPageIndex);
+            }
+        }
+        
+        // --- Quiz Data ---
+        const quizzes = [
+            // Speech Recognition 1-5
+            { type: 'speech', answer: '안녕하세요', fr: 'Bonjour', audio: 'annyeonghaseyo' },
+            { type: 'speech', answer: '안녕히 가세요', fr: 'Partez bien', audio: 'annyeonghi-gaseyo' },
+            { type: 'speech', answer: '감사합니다', fr: 'Merci', audio: 'gamsahamnida' },
+            { type: 'speech', answer: '죄송합니다', fr: 'Désolé', audio: 'joesonghamnida' },
+            { type: 'speech', answer: '안녕히 계세요', fr: 'Restez bien', audio: 'annyeonghi-gyeseyo' },
+            // MCQ 6-10
+            { type: 'mcq', questionAudio: 'annyeonghaseyo', answer: 'Bonjour', options: ['Bonjour', 'Au revoir', 'Merci', 'Désolé'] },
+            { type: 'mcq', questionAudio: 'annyeonghi-gaseyo', answer: 'Partez bien', options: ['Bonjour', 'Partez bien', 'Désolé', 'Restez bien'] },
+            { type: 'mcq', questionAudio: 'gamsahamnida', answer: 'Merci', options: ['Désolé', 'Bonjour', 'Merci', 'Au revoir'] },
+            { type: 'mcq', questionAudio: 'joesonghamnida', answer: 'Désolé', options: ['Bonjour', 'Partez bien', 'Désolé', 'Restez bien'] },
+            { type: 'mcq', questionAudio: 'annyeonghi-gyeseyo', answer: 'Restez bien', options: ['Restez bien', 'Partez bien', 'Bonjour', 'Merci'] },
+            // Speech Recognition 11-15
+            { type: 'speech-fr', answer: '안녕하세요', fr: 'Bonjour' },
+            { type: 'speech-fr', answer: '감사합니다', fr: 'Merci' },
+            { type: 'speech-fr', answer: '죄송합니다', fr: 'Désolé' },
+            { type: 'speech-fr', answer: '안녕히 계세요', fr: 'Restez bien' },
+            { type: 'speech-fr', answer: '안녕히 가세요', fr: 'Partez bien' },
+        ];
+
+        // --- Quiz Generation ---
+        function generateQuizPage(quizIndex) {
+            const quiz = quizzes[quizIndex];
+            const page = document.querySelector(`.page[data-quiz-index="${quizIndex}"]`);
+            if (!page) return;
+
+            let content = '';
+            if (quiz.type === 'speech') {
+                content = `
+                    <button onclick="playAudio('${quiz.audio}')" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-800 bg-sky-100 px-4 py-2 sm:px-6 sm:py-4 rounded-2xl hover:bg-sky-200 transition-colors">${quiz.answer}</button>
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-sky-600 mt-2 sm:mt-4 mb-4 sm:mb-6">${quiz.fr}</div>
+                    <p class="text-base sm:text-lg lg:text-xl text-slate-600 mb-2 leading-relaxed">Répétez la phrase.</p>
+                `;
+            } else if (quiz.type === 'speech-fr') {
+                content = `
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-700 mb-4 sm:mb-6">" ${quiz.fr} "</div>
+                    <p class="text-base sm:text-lg lg:text-xl text-slate-600 mb-2 sm:mb-4 leading-relaxed">Dites-le en coréen.</p>
+                `;
+            } else if (quiz.type === 'mcq') {
+                const optionsHTML = quiz.options.map((opt, i) => `
+                    <div class="quiz-option">
+                        <input type="radio" name="q${quizIndex}" value="${opt}" id="q${quizIndex}o${i}" class="hidden">
+                        <label for="q${quizIndex}o${i}" class="block cursor-pointer py-2 px-3 sm:py-3 sm:px-4 border-2 border-slate-200 rounded-lg text-base sm:text-lg lg:text-xl font-bold">${opt}</label>
+                    </div>
+                `).join('');
+                content = `
+                    <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-2 leading-relaxed">Que signifie cette phrase ?</h2>
+                    <button onclick="playAudio('${quiz.questionAudio}')" class="mb-2 text-4xl sm:text-5xl hover:opacity-75 transition-opacity">
+                        🔈
+                    </button>
+                    <form id="quiz-form-${quizIndex}" class="w-full max-w-lg px-4">
+                        <div class="space-y-2">${optionsHTML}</div>
+                        <div class="feedback-message text-base sm:text-xl"></div>
+                        <button type="submit" class="w-full mt-2 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-5 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                    </form>
+                `;
+            }
+            
+            if (quiz.type.startsWith('speech')) {
+                content += `
+                    <button id="mic-btn-${quizIndex}" class="mic-btn my-2 sm:my-4 bg-sky-500 text-white rounded-full text-4xl sm:text-5xl flex justify-center items-center w-16 h-16 sm:w-20 sm:h-20 hover:bg-sky-600">
+                        🎙️
+                    </button>
+                    <div id="transcript-${quizIndex}" class="text-base sm:text-xl lg:text-2xl text-slate-500 h-8"></div>
+                    <div class="feedback-message text-base sm:text-xl h-8 sm:h-10"></div>
+                    <!-- [수정] 2회 시도로 변경 -->
+                    <div id="attempts-${quizIndex}" class="text-xs sm:text-sm text-slate-400 mt-2">Tentatives restantes : 2</div>
+                `;
+            }
+
+            page.innerHTML = content;
+        }
+        
+        quizzes.forEach((_, i) => generateQuizPage(i));
+
+        // --- Page Management ---
+        const showPage = (index) => {
+            pages.forEach((page, i) => page.classList.toggle('active', i === index));
+            updateNavigation(index);
+            updateProgressBar(index);
+            if (index === totalPages - 1) { // 마지막 페이지 (16)
+                calculateAndShowScore();
+                // [요청 사항] 레슨 완료 postMessage
+                window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                console.log('Lesson complete message sent to parent.');
+            }
+        };
+
+        const updateNavigation = (index) => {
+            prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+            nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+            passerBtn.classList.add('hidden');
+            retryBtn.classList.add('hidden');
+            
+            const quizIndex = pages[index].dataset.quizIndex;
+            if (quizIndex !== undefined) {
+                const isAnswered = scores[quizIndex] !== null;
+                nextBtn.classList.toggle('hidden', !isAnswered);
+
+                const quiz = quizzes[quizIndex];
+                
+                // [수정] 2회 시도 실패 시 'Passer' 버튼 표시
+                if (quiz.type.startsWith('speech') && recognitionAttempts[quizIndex] >= 2 && scores[quizIndex] === 0) {
+                    passerBtn.classList.remove('hidden');
+                    nextBtn.classList.add('hidden'); // 'Passer'가 'Next'를 대신함
+                }
+                
+                // MCQ 오답 시 'Retry' 버튼 표시
+                if (quiz.type === 'mcq' && scores[quizIndex] === 0) {
+                     retryBtn.classList.remove('hidden');
+                }
+            } else {
+                nextBtn.classList.remove('hidden');
+            }
+        };
+
+        const updateProgressBar = (index) => {
+            progressBar.style.width = `${((index + 1) / totalPages) * 100}%`;
+        };
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentPageIndex < totalPages - 1) {
+                pageTurnSound?.triggerAttackRelease('A5', '0.05s');
+                currentPageIndex++;
+                showPage(currentPageIndex);
+            }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Naver Clova API Error:', errorText);
-            return Response.json({
-                error: 'Erreur lors de la transcription audio',
-                details: errorText,
-            }, { status: 500 });
-        }
-
-        const result = await response.json();
-
-        // 7. 프론트엔드로 Naver가 제공한 "실제 발음 점수"를 반환
-        // (프론트엔드 코드(HTML)가 이 점수를 사용합니다)
-        const transcribedText = result.text || '';
-        const score = result.assessment_score || 0; // 1~100점
-
-        // 8. 백엔드에서 생성한 피드백 (프론트엔드로 전달됨)
-        let feedback = '';
-        if (score >= 90) {
-            feedback = 'Excellente pronunciation ! 🎉';
-        } else if (score >= 70) {
-            feedback = 'Bonne pronunciation !';
-        } else if (score >= 50) {
-            feedback = 'C\'est un bon début. Essayez de prononcer plus clairement.';
-        } else {
-            feedback = 'Continuez à pratiquer. Écoutez attentivement et réessayez.';
-        }
-
-        return Response.json({
-            score: score, // Naver 원점수 (0-100)
-            transcribedText: transcribedText,
-            feedback: feedback // 백엔드 생성 피드백
-        }, {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
+        prevBtn.addEventListener('click', () => {
+            if (currentPageIndex > 0) {
+                pageTurnSound?.triggerAttackRelease('G5', '0.05s');
+                currentPageIndex--;
+                showPage(currentPageIndex);
+            }
         });
 
-    } catch (error) {
-        console.error('Error in Naver Clova Speech function:', error);
-        return Response.json({ 
-            error: error.message || 'Erreur interne du serveur'
-        }, { status: 500 });
-    }
-});
+        passerBtn.addEventListener('click', () => {
+             const quizIndex = pages[currentPageIndex].dataset.quizIndex;
+             if (scores[quizIndex] === null) scores[quizIndex] = 0; // 점수 0점으로 확정
+             if (currentPageIndex < totalPages - 1) {
+                  currentPageIndex++;
+                  showPage(currentPageIndex);
+             }
+        });
+        
+        retryBtn.addEventListener('click', () => {
+            // [수정] 이 버튼은 MCQ 전용임
+            const quizIndex = parseInt(pages[currentPageIndex].dataset.quizIndex);
+            const quiz = quizzes[quizIndex];
+            
+            if (quiz.type === 'mcq') {
+                 scores[quizIndex] = null; // Reset score to unanswered
+                 const form = document.querySelector(`#quiz-form-${quizIndex}`);
+                 if (form) {
+                     form.reset();
+                     const radios = form.querySelectorAll('input[type="radio"]');
+                     radios.forEach(r => r.disabled = false);
+                     form.querySelector('.feedback-message').textContent = '';
+                     form.querySelector('button[type=submit]').classList.remove('hidden');
+                 }
+            } 
+
+            retryBtn.classList.add('hidden');
+            passerBtn.classList.add('hidden');
+            updateNavigation(currentPageIndex);
+        });
+        
+        // --- Quiz Handlers ---
+        
+        // [수정] Speech Recognition (MediaRecorder)
+        document.querySelectorAll('.speech-quiz-page').forEach(page => {
+            const quizIndex = parseInt(page.dataset.quizIndex);
+            const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
+            
+            if (micBtn) {
+                micBtn.addEventListener('click', () => {
+                    if (micBtn.disabled || micBtn.classList.contains('loading')) return;
+
+                    if (!recognitionAttempts[quizIndex]) recognitionAttempts[quizIndex] = 0;
+                    // [수정] 2회 시도 제한
+                    if (recognitionAttempts[quizIndex] >= 2 && scores[quizIndex] === null) return; 
+                    
+                    if (isRecording) {
+                        stopRecording(quizIndex);
+                    } else {
+                        initAudioSynth(); // 오디오 컨텍스트 활성화 (클릭 시)
+                        startRecording(quizIndex);
+                    }
+                });
+            }
+        });
+
+        // [수정] Multiple Choice
+        document.querySelectorAll('.mcq-quiz-page').forEach(page => {
+            const quizIndex = parseInt(page.dataset.quizIndex);
+            const form = page.querySelector(`#quiz-form-${quizIndex}`);
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    initAudioSynth(); // 사운드 초기화
+                    const formData = new FormData(form);
+                    const userAnswer = formData.get(`q${quizIndex}`);
+                    const feedbackEl = form.querySelector('.feedback-message');
+                    
+                    if (!userAnswer) {
+                        feedbackEl.textContent = "Veuillez sélectionner une réponse.";
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-yellow-500';
+                        return;
+                    }
+                    
+                    form.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+                    form.querySelector('button[type=submit]').classList.add('hidden');
+                    
+                    if (userAnswer === quizzes[quizIndex].answer) {
+                        scores[quizIndex] = 2; // MCQ는 정답 시 2점
+                        feedbackEl.textContent = 'Correct !';
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
+                        correctSound?.triggerAttackRelease('C5', '0.2s');
+                    } else {
+                        scores[quizIndex] = 0;
+                        feedbackEl.textContent = 'Incorrect.';
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        retryBtn.classList.remove('hidden');
+                    }
+                    updateNavigation(currentPageIndex);
+                });
+            }
+        });
+        
+        // --- Score Calculation ---
+        function calculateAndShowScore() {
+            // [수정] 스피치 10문제 (최대 2점), MCQ 5문제 (2점) = 20 + 10 = 30점 만점
+            const totalScore = scores.reduce((sum, score) => sum + (score === null ? 0 : score), 0);
+            const maxScore = 30;
+            document.getElementById('final-score').textContent = `${totalScore} / ${maxScore}`;
+            
+            const messageEl = document.getElementById('evaluation-message');
+            const percentage = (totalScore / maxScore) * 100;
+
+            if (percentage >= 85) { // 25.5+
+                messageEl.textContent = "Très bien ! Passez à l'étape suivante et continuez à apprendre le coréen !";
+            } else if (percentage >= 66) { // 19.8+
+                messageEl.textContent = "Bien joué. Passez à l'étape suivante et continuez à apprendre le coréen !";
+            } else if (percentage >= 50) { // 15+
+                messageEl.textContent = "Bien joué. Améliorez votre coréen avec une pratique régulière !";
+            } else if (percentage >= 33) { // 9.9+
+                messageEl.textContent = "Bon travail. Améliorez votre coréen avec une pratique régulière !";
+            } else {
+                messageEl.textContent = "Bon travail. Que diriez-vous de revoir les phrases 1 à 5 ?";
+            }
+        }
+
+        // --- Initialisation ---
+        showPage(currentPageIndex);
+    });
+    </script>
+</body>
+</html>
