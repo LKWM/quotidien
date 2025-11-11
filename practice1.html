@@ -156,12 +156,19 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         // --- API & Setup ---
-        // [!!!] URL Parse 오류 수정:
-        // blob: URL에서 /api/... 같은 상대 경로를 fetch가 인식하지 못하므로,
-        // window.location.origin을 사용해 절대 경로를 만듭니다.
-        // const CLOVA_API_FUNCTION_URL = window.location.origin + '/api/functions/naverClovaSpeech';
-        // [!!!] 2:06 AM 수정: URL 파싱 오류가 아니라 405 오류가 먼저이므로, 상대 경로로 되돌립니다.
-        const CLOVA_API_FUNCTION_URL = '/api/functions/naverClovaSpeech';
+        
+        // [!!!] 님의 Base 44 앱 주소(Origin)로 수정했습니다.
+        // "https://coreeno.base44.app"이 님의 앱 주소가 맞는지 확인해주세요.
+        const BASE_44_ORIGIN = "https://coreeno.base44.app"; 
+
+        // [!!!] 경고 메시지를 alert 대신 console.warn으로 변경했습니다.
+        if (BASE_44_ORIGIN === "YOUR_BASE_44_APP_URL_HERE") {
+            // alert("Erreur critique: L'URL de l'application Base 44 n'est pas configurée dans le code HTML. L'API ne fonctionnera pas.");
+            console.warn("Veuillez remplacer 'YOUR_BASE_44_APP_URL_HERE' par l'URL de votre application Base 44 (l'origine de la page de prévisualisation).");
+        }
+
+        // [!!!] 이제 'https://coreeno.base44.app' + '/api/functions/naverClovaSpeech'로 올바른 URL이 생성됩니다.
+        const CLOVA_API_FUNCTION_URL = BASE_44_ORIGIN + '/api/functions/naverClovaSpeech';
 
 
         const totalPages = 17; // 0-16
@@ -304,27 +311,22 @@
             try {
                 const response = await fetch(CLOVA_API_FUNCTION_URL, {
                     method: 'POST',
-                    // [!!!] 405 오류를 우회하기 위해 'text/plain'으로 변경
                     headers: { 'Content-Type': 'text/plain' }, 
-                    body: JSON.stringify({ // 데이터는 JSON 문자열로 전송
+                    body: JSON.stringify({ 
                         audioBase64: audioBase64,
-                        languageCode: "Kor", // 네이버 문서 기준 "Kor"
+                        languageCode: "Kor", 
                         referenceText: quiz.answer
                     })
                 });
     
-                // [!!!] "body stream already read" 오류 수정을 위해 이 블록을 수정합니다.
                 if (!response.ok) {
                     let errorDetails = "Erreur inconnue";
-                    // 1. 응답을 *한 번만* .text()로 읽습니다.
                     const errorText = await response.text(); 
                     
-                    // 2. 읽은 텍스트를 파싱하려고 시도합니다.
                     try {
                         const errorResult = JSON.parse(errorText); 
                         errorDetails = errorResult.error || JSON.stringify(errorResult);
                     } catch (e) {
-                        // 3. 파싱에 실패하면 (즉, 405 오류처럼 일반 텍스트가 오면) 텍스트를 그대로 사용합니다.
                         errorDetails = errorText; 
                     }
                     throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
@@ -392,9 +394,9 @@
                 }, '*');
 
             } catch (error) {
-                console.error("Erreur lors de l'évaluation:", error); // 에러 로그에 자세한 내용 표시
+                console.error("Erreur lors de l'évaluation:", error); 
                 if(feedbackEl) {
-                    feedbackEl.textContent = "Erreur de connexion. Veuillez réessayer.";
+                    feedbackEl.textContent = `Erreur de connexion. ${error.message.includes('Failed to parse') ? 'URL invalide.' : 'Veuillez réessayer.'}`;
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                 }
                 if (recognitionAttempts[quizIndex] > 0) recognitionAttempts[quizIndex]--; 
