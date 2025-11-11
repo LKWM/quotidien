@@ -159,7 +159,10 @@
         // [!!!] URL Parse 오류 수정:
         // blob: URL에서 /api/... 같은 상대 경로를 fetch가 인식하지 못하므로,
         // window.location.origin을 사용해 절대 경로를 만듭니다.
-        const CLOVA_API_FUNCTION_URL = window.location.origin + '/api/functions/naverClovaSpeech';
+        // const CLOVA_API_FUNCTION_URL = window.location.origin + '/api/functions/naverClovaSpeech';
+        // [!!!] 2:06 AM 수정: URL 파싱 오류가 아니라 405 오류가 먼저이므로, 상대 경로로 되돌립니다.
+        const CLOVA_API_FUNCTION_URL = '/api/functions/naverClovaSpeech';
+
 
         const totalPages = 17; // 0-16
         let currentPageIndex = 0;
@@ -301,26 +304,29 @@
             try {
                 const response = await fetch(CLOVA_API_FUNCTION_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+                    // [!!!] 405 오류를 우회하기 위해 'text/plain'으로 변경
+                    headers: { 'Content-Type': 'text/plain' }, 
+                    body: JSON.stringify({ // 데이터는 JSON 문자열로 전송
                         audioBase64: audioBase64,
                         languageCode: "Kor", // 네이버 문서 기준 "Kor"
                         referenceText: quiz.answer
                     })
                 });
     
-                // [!!!] "body stream already read" 오류를 방지하는 로직
+                // [!!!] "body stream already read" 오류 수정을 위해 이 블록을 수정합니다.
                 if (!response.ok) {
                     let errorDetails = "Erreur inconnue";
+                    // 1. 응답을 *한 번만* .text()로 읽습니다.
                     const errorText = await response.text(); 
                     
+                    // 2. 읽은 텍스트를 파싱하려고 시도합니다.
                     try {
                         const errorResult = JSON.parse(errorText); 
                         errorDetails = errorResult.error || JSON.stringify(errorResult);
                     } catch (e) {
+                        // 3. 파싱에 실패하면 (즉, 405 오류처럼 일반 텍스트가 오면) 텍스트를 그대로 사용합니다.
                         errorDetails = errorText; 
                     }
-                    // `fetch` 자체의 URL 파싱 에러를 잡기 위해 `Error.stack`을 확인합니다.
                     throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
                 }
                 
@@ -388,8 +394,7 @@
             } catch (error) {
                 console.error("Erreur lors de l'évaluation:", error); // 에러 로그에 자세한 내용 표시
                 if(feedbackEl) {
-                    // 에러 로그에 `fetch`의 URL 파싱 에러가 포함되도록 메시지 수정
-                    feedbackEl.textContent = `Erreur de connexion. ${error.message.includes('Failed to parse') ? 'URL invalide.' : 'Veuillez réessayer.'}`;
+                    feedbackEl.textContent = "Erreur de connexion. Veuillez réessayer.";
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                 }
                 if (recognitionAttempts[quizIndex] > 0) recognitionAttempts[quizIndex]--; 
