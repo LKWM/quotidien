@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coréen - Pratique Orale 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Nanum Gothic', sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        /* [수정] 모바일 최적화를 위해 고정 크기 제거 */
+        .course-container {
+            width: 100%;
+            max-width: 1000px;
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .quiz-option input:checked + label {
+            background-color: #38bdf8;
+            color: white;
+            border-color: #0284c7;
+        }
+        .feedback-message {
+            min-height: 2.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .mic-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .mic-btn.recording {
+            transform: scale(1.1);
+            background-color: #ef4444; /* red-500 */
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
+        }
+        .mic-btn.loading {
+            background-color: #6b7280; /* gray-500 */
+            cursor: not-allowed;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        /* [수정] Pratique 1과 동일한 하단 바 스타일 */
+        .nav-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem; /* gap-4 */
+        }
+        @media (min-width: 640px) { /* sm: */
+            .nav-container {
+                padding: 1.5rem; /* sm:p-6 */
+            }
+        }
+        @media (min-width: 1024px) { /* lg: */
+            .nav-container {
+                padding: 2rem; /* lg:p-8 */
+            }
+        }
+        #next-btn:disabled {
+            background-color: #9ca3af; /* gray-400 */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<!-- [수정] 모바일 최적화를 위해 h-screen 추가 -->
+<body class="bg-slate-100 flex items-center justify-center min-h-screen h-screen p-2 sm:p-4">
+
+    <!-- [수정] 모바일 최적화를 위해 h-full 및 패딩 수정 -->
+    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden h-full">
+
+        <!-- Audio elements -->
+        <audio id="audio-annyeonghaseyo" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gaseyo" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio>
+        <audio id="audio-gamsahamnida" src="https://static.wixstatic.com/mp3/699687_cbf26bae6c624aeabbe85140522122c7.mp3" preload="auto"></audio>
+        <audio id="audio-joesonghamnida" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
+        <audio id="audio-annyeonghi-gyeseyo" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio>
+        <audio id="audio-eoseooseyo" src="https://static.wixstatic.com/mp3/699687_7ec4bd8864f64a46b9a2306548216591.mp3" preload="auto"></audio>
+        <audio id="audio-gwaenchanayo" src="https://static.wixstatic.com/mp3/699687_8ad7694f20f3465599ea2e4c798bd886.mp3" preload="auto"></audio>
+        <audio id="audio-jalmeokgesseumnida" src="https://static.wixstatic.com/mp3/699687_2daadc40b4084be28d3b7bee038b4dc5.mp3" preload="auto"></audio>
+        <audio id="audio-masissgedeseyo" src="https://static.wixstatic.com/mp3/699687_4ebb50f3691d4a19885d9927453385d8.mp3" preload="auto"></audio>
+        <audio id="audio-bangapseumnida" src="https://static.wixstatic.com/mp3/699687_6a59eceef2a845babe4554b6884752f1.mp3" preload="auto"></audio>
+        
+        <!-- [삭제] 상단 상태 바 HTML 제거 -->
+        <!-- <div id="status-bar" ...></div> -->
+
+        <!-- [수정] 모바일 최적화를 위해 overflow-auto 및 패딩 추가 -->
+        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center overflow-auto pb-16 sm:pb-20">
+
+            <div id="page-0" class="page w-full h-full flex-col justify-center items-center">
+                <!-- [수정] 모바일용 반응형 텍스트 크기 -->
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-800">Pratique Orale 2</h1>
+                <p class="text-lg sm:text-xl lg:text-2xl text-slate-600 mt-2 sm:mt-4 leading-relaxed">Testez 10 phrases essentielles.</p>
+            </div>
+
+            <!-- Dynamically generated quiz pages will be added here -->
+            
+        </div>
+
+        <!-- [수정] Pratique 1과 동일한 하단 바로 교체 -->
+        <div class="nav-container">
+            <div class="justify-self-start">
+                <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+            </div>
+            
+            <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
+                <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
+            </div>
+            
+            <div class="justify-self-end flex gap-2">
+                <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
+                <button id="passer-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Passer</button>
+                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors" disabled>Suivant</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // --- Global Audio Player ---
+    function playAudio(id) {
+        const audio = document.getElementById(`audio-${id}`);
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play().catch(e => console.error("Audio play failed:", e));
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- [추가] API 및 설정 ---
+        const BASE_44_ORIGIN = "https://coreeno.base44.app"; 
+        const CLOVA_API_FUNCTION_URL = BASE_44_ORIGIN + '/api/functions/naverClovaSpeech';
+        
+        const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
+
+        const sentences = [
+            { ko: '안녕하세요', fr: 'Bonjour', audio: 'annyeonghaseyo' },
+            { ko: '안녕히 가세요', fr: 'Partez bien', audio: 'annyeonghi-gaseyo' },
+            { ko: '감사합니다', fr: 'Merci', audio: 'gamsahamnida' },
+            { ko: '죄송합니다', fr: 'Désolé', audio: 'joesonghamnida' },
+            { ko: '안녕히 계세요', fr: 'Restez bien', audio: 'annyeonghi-gyeseyo' },
+            { ko: '어서 오세요', fr: 'Bienvenue', audio: 'eoseooseyo' },
+            { ko: '괜찮아요', fr: "Ce n'est pas grave", audio: 'gwaenchanayo' },
+            { ko: '잘 먹겠습니다', fr: 'Je vais bien manger', audio: 'jalmeokgesseumnida' },
+            { ko: '맛있게 드세요', fr: 'Bon appétit', audio: 'masissgedeseyo' },
+            { ko: '반갑습니다', fr: 'Enchanté', audio: 'bangapseumnida' }
+        ];
+
+        // 퀴즈 섞기 및 생성
+        const type1Quizzes = shuffleArray(sentences).map(s => ({ type: 'speech-listen', ...s }));
+        const type2Sentences = shuffleArray(sentences.slice(5)); // 5개만 선택
+        const type2Quizzes = type2Sentences.map(s => {
+            let options = [...sentences].sort(() => 0.5 - Math.random()).filter(o => o.fr !== s.fr).slice(0, 3).map(opt => opt.fr);
+            options.push(s.fr);
+            options.sort(() => 0.5 - Math.random());
+            return { type: 'mcq', questionAudio: s.audio, answer: s.fr, ko: s.ko, options }; // ko 추가
+        });
+        const type3Quizzes = shuffleArray(sentences).map(s => ({ type: 'speech-read', ...s }));
+
+        // [수정] 퀴즈 순서: (말하기 10 -> 듣기 5 -> 읽기 10) 총 25개
+        const quizzes = [
+            ...type1Quizzes,
+            ...type2Quizzes,
+            ...type3Quizzes
+        ];
+        
+        const totalQuizPages = quizzes.length;
+        const totalPages = 2 + totalQuizPages; // Title + 25 Quizzes + Score
+        let currentPageIndex = 0;
+        let scores = Array(totalQuizPages).fill(null);
+        let attempts = {}; // [수정] Pratique 1과 동일한 2회 시도 로직
+        let soundsReady = false;
+
+        const pageContainer = document.getElementById('page-content');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const passerBtn = document.getElementById('passer-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const progressBar = document.getElementById('progress-indicator');
+        // [삭제] const statusBar = document.getElementById('status-bar');
+
+        // 페이지 및 상태 바 동적 생성
+        for (let i = 0; i < totalQuizPages; i++) {
+            const pageEl = document.createElement('div');
+            pageEl.id = `page-${i + 1}`;
+            pageEl.className = 'page w-full h-full flex-col justify-center items-center';
+            pageEl.dataset.quizIndex = i;
+            pageContainer.appendChild(pageEl);
+
+            // [삭제] 상단 상태 바 블록 생성 로직
+            // const block = document.createElement('div');
+            // ...
+            // statusBar.appendChild(block);
+        }
+        const scorePageEl = document.createElement('div');
+        scorePageEl.id = `page-${totalQuizPages + 1}`;
+        scorePageEl.className = 'page w-full h-full flex-col justify-center items-center';
+        pageContainer.appendChild(scorePageEl);
+        const pages = document.querySelectorAll('.page');
+
+        // 사운드 초기화
+        let correctSound, wrongSound, pageTurnSound, finishSound;
+        const initAudioSynth = async () => {
+            if (soundsReady) return;
+            try {
+                await Tone.start();
+                correctSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 } }).toDestination();
+                wrongSound = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.2 } }).toDestination();
+                pageTurnSound = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+                finishSound = new Tone.PolySynth(Tone.Synth, { envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 1 } }).toDestination();
+                soundsReady = true;
+                console.log('Audio context started.');
+            } catch (e) {
+                console.error("Audio context could not be started: ", e);
+            }
+        };
+        document.body.addEventListener('click', initAudioSynth, { once: true });
+        document.body.addEventListener('touchstart', initAudioSynth, { once: true });
+
+        // --- [추가] MediaRecorder (Naver API) 로직 ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingTimeout;
+
+        async function startRecording(quizIndex) {
+            if (isRecording) return;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Votre navigateur ne supporte pas l'enregistrement audio.");
+                return;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                isRecording = true;
+                audioChunks = [];
+                let mimeType = 'audio/webm;codecs=opus';
+                if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/webm';
+                if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType }); 
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstart = () => {
+                    document.querySelector(`#mic-btn-${quizIndex}`)?.classList.add('recording');
+                    document.querySelector(`#transcript-${quizIndex}`).textContent = "J'écoute...";
+                    clearTimeout(recordingTimeout);
+                    recordingTimeout = setTimeout(() => { if (isRecording) stopRecording(quizIndex); }, 10000); // 10초
+                };
+                mediaRecorder.onstop = () => {
+                    isRecording = false;
+                    clearTimeout(recordingTimeout);
+                    document.querySelector(`#mic-btn-${quizIndex}`)?.classList.remove('recording');
+                    document.querySelector(`#mic-btn-${quizIndex}`)?.classList.add('loading');
+                    document.querySelector(`#transcript-${quizIndex}`).textContent = "Évaluation en cours...";
+
+                    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        handlePronunciationEvaluation(quizIndex, reader.result);
+                    };
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+            } catch (err) {
+                console.error("Error starting recording:", err);
+                if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+                    alert("Impossible d'accéder au microphone. Veuillez autoriser l'accès.");
+                } else {
+                    alert(`Erreur microphone: ${err.name}. Veuillez réessayer.`);
+                }
+            }
+        }
+
+        function stopRecording(quizIndex) {
+            clearTimeout(recordingTimeout);
+            if (mediaRecorder && isRecording) mediaRecorder.stop();
+        }
+
+        function normalizeText(text) {
+            if (typeof text !== 'string') return '';
+            return text.trim().replace(/[.,!?'\s]/g, '');
+        }
+        
+        // [추가] Naver API 호출 및 점수 로직 (Pratique 1과 동일)
+        async function handlePronunciationEvaluation(quizIndex, audioBase64) {
+            const quiz = quizzes[quizIndex];
+            const page = document.querySelector(`#page-${currentPageIndex}`);
+            const feedbackEl = page.querySelector('.feedback-message');
+            const transcriptEl = page.querySelector(`#transcript-${quizIndex}`);
+            const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
+            const attemptsEl = page.querySelector(`#attempts-${quizIndex}`);
+
+            if (attempts[quizIndex] === undefined) attempts[quizIndex] = 0;
+            attempts[quizIndex]++;
+            const isFirstAttempt = attempts[quizIndex] === 1;
+            
+            try {
+                const response = await fetch(CLOVA_API_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        audioBase64: audioBase64,
+                        languageCode: "Kor", 
+                        referenceText: quiz.ko // [수정] Pratique 2의 퀴즈 데이터 구조(ko)에 맞춤
+                    })
+                });
+    
+                if (!response.ok) {
+                    let errorDetails = "Erreur inconnue";
+                    const errorText = await response.text();
+                    try { const errorResult = JSON.parse(errorText); errorDetails = errorResult.error || JSON.stringify(errorResult); }
+                    catch (e) { errorDetails = errorText; }
+                    throw new Error(`Erreur du backend (${response.status}): ${errorDetails}`);
+                }
+                
+                const result = await response.json(); 
+                const transcribedText = result.text || '';
+                const score = (result.assessment ? result.assessment.pronunciation_score : 0) || 0;
+
+                if (transcriptEl) transcriptEl.textContent = `"${transcribedText || '...'}"`;
+
+                const normalizedTranscribed = normalizeText(transcribedText);
+                const normalizedReference = normalizeText(quiz.ko); // [수정] ko
+                
+                const isTextMatch = (normalizedTranscribed === normalizedReference);
+                const isScorePass = score >= 85; // 85점 컷
+                
+                const isCorrect = isTextMatch && isScorePass; 
+                let earnedPoints = 0;
+
+                if (isCorrect) {
+                    earnedPoints = isFirstAttempt ? 2 : 1; 
+                    scores[quizIndex] = earnedPoints;
+                    correctSound?.triggerAttackRelease('C5', '0.2s');
+                    if(micBtn) micBtn.disabled = true;
+                    passerBtn.classList.add('hidden'); 
+                    retryBtn.classList.add('hidden');
+                    if(feedbackEl) {
+                        feedbackEl.textContent = `Très bien ! (Score: ${score} / 100)`;
+                        feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
+                    }
+                } else {
+                    if (isFirstAttempt) {
+                        scores[quizIndex] = null; 
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        if(attemptsEl) attemptsEl.textContent = "Tentatives restantes : 1";
+                        if(feedbackEl) {
+                             feedbackEl.textContent = `Écoutez et parlez à nouveau. (Score: ${score} / 100)`; 
+                             feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                        }
+                    } else {
+                        scores[quizIndex] = 0;
+                        wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        if(feedbackEl) {
+                             feedbackEl.textContent = `Réponse: "${quiz.ko}" (Votre score: ${score} / 100)`; // [수정] ko
+                             feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                        }
+                        if(micBtn) micBtn.disabled = true;
+                        passerBtn.classList.remove('hidden'); 
+                        retryBtn.classList.add('hidden');
+                    }
+                }
+
+                // [추가] PostMessage
+                window.parent.postMessage({
+                    type: 'pronunciation_result',
+                    quizId: quizIndex,
+                    naverScore: score,
+                    pointsAwarded: earnedPoints,
+                    transcribedText: transcribedText,
+                    referenceText: quiz.ko, // [수정] ko
+                    isCorrect: isCorrect,
+                    attempt: attempts[quizIndex],
+                    assessment: result.assessment || { pronunciation_score: score }
+                }, '*');
+
+            } catch (error) {
+                console.error("Erreur lors de l'évaluation:", error); 
+                if(feedbackEl) {
+                    feedbackEl.textContent = `Erreur de connexion. ${error.message.includes('Failed to parse') ? 'URL invalide.' : 'Veuillez réessayer.'}`;
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                }
+                if (attempts[quizIndex] > 0) attempts[quizIndex]--; 
+            } finally {
+                if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 2 - attempts[quizIndex])}`;
+                if(micBtn) micBtn.classList.remove('loading');
+                // [삭제] updateStatusBar();
+                updateNavigation(currentPageIndex);
+            }
+        }
+        // --- [끝] Naver API 로직 ---
+
+        // 퀴즈 페이지 HTML 생성 (모바일 반응형 크기로 수정)
+        function generateQuizPage(quizIndex) {
+            const quiz = quizzes[quizIndex];
+            const page = document.querySelector(`.page[data-quiz-index="${quizIndex}"]`);
+            if (!page) return;
+
+            let content = '';
+            if (quiz.type === 'speech-listen') {
+                content = `
+                    <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4 leading-relaxed">Écoutez et répétez</h2>
+                    <button onclick="playAudio('${quiz.audio}')" class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-800 bg-sky-100 px-4 py-2 sm:px-6 sm:py-4 rounded-2xl hover:bg-sky-200 transition-colors">${quiz.ko}</button>
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-sky-600 mt-2 sm:mt-4 mb-4 sm:mb-6">${quiz.fr}</div>`;
+            } else if (quiz.type === 'mcq') {
+                const optionsHTML = quiz.options.map((opt, i) => `
+                    <div class="quiz-option">
+                        <input type="radio" name="q${quizIndex}" value="${opt}" id="q${quizIndex}o${i}" class="hidden">
+                        <label for="q${quizIndex}o${i}" class="block cursor-pointer py-2 px-3 sm:py-3 sm:px-4 border-2 border-slate-200 rounded-lg text-base sm:text-lg lg:text-xl font-bold">${opt}</label>
+                    </div>`).join('');
+                content = `
+                    <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-2 leading-relaxed">Que signifie cette phrase ?</h2>
+                    <button onclick="playAudio('${quiz.questionAudio}')" class="mb-2 text-4xl sm:text-5xl hover:opacity-75 transition-opacity">🔈</button>
+                    <form id="quiz-form-${quizIndex}" class="w-full max-w-lg px-4">
+                        <div class="space-y-2">${optionsHTML}</div>
+                        <div class="feedback-message text-base sm:text-xl"></div>
+                        <button type="submit" class="w-full mt-2 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-5 text-sm sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                    </form>`;
+            } else if (quiz.type === 'speech-read') {
+                content = `
+                    <h2 class="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4 leading-relaxed">Lisez la phrase en coréen</h2>
+                    <div class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-700 mb-4 sm:mb-6">" ${quiz.fr} "</div>`;
+            }
+            
+            if (quiz.type.startsWith('speech')) {
+                content += `
+                    <button id="mic-btn-${quizIndex}" class="mic-btn my-2 sm:my-4 bg-sky-500 text-white rounded-full text-4xl sm:text-5xl flex justify-center items-center w-16 h-16 sm:w-20 sm:h-20 hover:bg-sky-600">🎙️</button>
+                    <div id="transcript-${quizIndex}" class="text-base sm:text-xl lg:text-2xl text-slate-500 h-8"></div>
+                    <div class="feedback-message text-base sm:text-xl h-8 sm:h-10"></div>
+                    <div id="attempts-${quizIndex}" class="text-xs sm:text-sm text-slate-400 mt-2">Tentatives restantes : 2</div>`;
+            }
+            page.innerHTML = content;
+        }
+        
+        quizzes.forEach((_, i) => generateQuizPage(i));
+
+        // [삭제] updateStatusBar 함수
+        // function updateStatusBar() { ... }
+
+        // 페이지 보이기 (Pratique 1의 로직으로 일부 교체)
+        function showPage(index) {
+            pages.forEach((page, i) => page.classList.toggle('active', i === index));
+            
+            const isQuizPage = index > 0 && index < totalPages - 1;
+            // [삭제] statusBar.classList.toggle('hidden', !isQuizPage);
+
+            updateNavigation(index);
+            updateProgressBar(index);
+
+            if (index === totalPages - 1) { // 마지막 페이지
+                calculateAndShowScore();
+                // [추가] 레슨 완료 PostMessage
+                window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                console.log('Lesson complete message sent to parent.');
+            }
+            else if (isQuizPage) {
+                const quizIndex = parseInt(pages[index].dataset.quizIndex);
+                const quiz = quizzes[quizIndex];
+                if (quiz.type.startsWith('speech')) {
+                    const attemptsEl = document.getElementById(`attempts-${quizIndex}`);
+                    if(attemptsEl) attemptsEl.textContent = `Tentatives restantes : ${Math.max(0, 2 - (attempts[quizIndex] || 0))}`;
+                }
+            }
+        }
+        
+        // [수정] Pratique 1과 동일한 네비게이션 로직
+        function updateNavigation(index) {
+            prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+            nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+            nextBtn.classList.remove('hidden');
+            passerBtn.classList.add('hidden');
+            retryBtn.classList.add('hidden');
+            
+            const quizIndex = pages[index]?.dataset.quizIndex;
+            if (quizIndex !== undefined) {
+                const isAnswered = scores[quizIndex] !== null;
+                nextBtn.disabled = !isAnswered;
+                const quiz = quizzes[quizIndex];
+                
+                if (quiz.type.startsWith('speech') && (attempts[quizIndex] || 0) >= 2 && scores[quizIndex] === 0) {
+                    passerBtn.classList.remove('hidden');
+                    nextBtn.disabled = true;
+                }
+                
+                if (quiz.type === 'mcq' && scores[quizIndex] === 0) {
+                     retryBtn.classList.remove('hidden');
+                     nextBtn.disabled = true;
+                }
+            } else {
+                nextBtn.disabled = false;
+            }
+        }
+
+        function updateProgressBar(index) {
+            progressBar.style.width = `${(index / (totalPages - 1)) * 100}%`;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (nextBtn.disabled) return;
+            if (currentPageIndex < totalPages - 1) {
+                pageTurnSound?.triggerAttackRelease('A5', '0.05s');
+                currentPageIndex++;
+                showPage(currentPageIndex);
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentPageIndex > 0) {
+                pageTurnSound?.triggerAttackRelease('G5', '0.05s');
+                currentPageIndex--;
+                showPage(currentPageIndex);
+            }
+        });
+
+        passerBtn.addEventListener('click', () => {
+             const quizIndex = pages[currentPageIndex].dataset.quizIndex;
+             if(scores[quizIndex] === null) scores[quizIndex] = 0;
+             // [삭제] updateStatusBar();
+             if (currentPageIndex < totalPages - 1) {
+                  currentPageIndex++;
+                  showPage(currentPageIndex);
+             }
+        });
+        
+        retryBtn.addEventListener('click', () => {
+            const quizIndex = parseInt(pages[currentPageIndex].dataset.quizIndex);
+            scores[quizIndex] = null;
+            attempts[quizIndex] = 0;
+            const quiz = quizzes[quizIndex];
+
+            if (quiz.type === 'mcq') {
+                 const form = document.querySelector(`#quiz-form-${quizIndex}`);
+                 if (form) {
+                     form.reset();
+                     form.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = false);
+                     form.querySelector('.feedback-message').textContent = '';
+                     form.querySelector('button[type=submit]').classList.remove('hidden');
+                 }
+            }
+            // [삭제] updateStatusBar();
+            updateNavigation(currentPageIndex);
+            showPage(currentPageIndex); // Re-render page to clear feedback
+        });
+
+        // [수정] 퀴즈 핸들러 (Pratique 1의 로직 적용)
+        document.querySelectorAll('.page[data-quiz-index]').forEach(page => {
+            const quizIndex = parseInt(page.dataset.quizIndex);
+            const quiz = quizzes[quizIndex];
+
+            if (quiz.type.startsWith('speech')) {
+                const micBtn = page.querySelector(`#mic-btn-${quizIndex}`);
+                if (micBtn) {
+                    micBtn.addEventListener('click', () => {
+                        if (micBtn.disabled || micBtn.classList.contains('loading')) return;
+                        if (!attempts[quizIndex]) attempts[quizIndex] = 0;
+                        if (attempts[quizIndex] >= 2 && scores[quizIndex] === null) return; 
+                        
+                        if (isRecording) stopRecording(quizIndex);
+                        else {
+                            initAudioSynth(); 
+                            startRecording(quizIndex);
+                        }
+                    });
+                }
+            } else if (quiz.type === 'mcq') {
+                const form = page.querySelector(`#quiz-form-${quizIndex}`);
+                if (form) {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        initAudioSynth();
+                        if (scores[quizIndex] !== null) return;
+
+                        const formData = new FormData(form);
+                        const userAnswer = formData.get(`q${quizIndex}`);
+                        const feedbackEl = form.querySelector('.feedback-message');
+                        
+                        if (!userAnswer) {
+                            feedbackEl.textContent = "Veuillez sélectionner une réponse.";
+                            feedbackEl.className = 'feedback-message text-base sm:text-xl text-yellow-500';
+                            return;
+                        }
+                        
+                        attempts[quizIndex] = (attempts[quizIndex] || 0) + 1;
+                        
+                        if (userAnswer === quiz.answer) {
+                            scores[quizIndex] = attempts[quizIndex] === 1 ? 2 : 1; // 1차 2점, 2차 1점
+                            feedbackEl.textContent = 'Correct !';
+                            feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
+                            correctSound?.triggerAttackRelease('C5', '0.2s');
+                        } else {
+                            if (attempts[quizIndex] >= 2) scores[quizIndex] = 0;
+                            feedbackEl.textContent = 'Incorrect. Essayez encore.';
+                            feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                            wrongSound?.triggerAttackRelease('A#2', '0.2s');
+                        }
+                        
+                        if (scores[quizIndex] !== null) {
+                            form.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+                            form.querySelector('button[type=submit]').classList.add('hidden');
+                        } else {
+                            form.reset();
+                        }
+                        // [삭제] updateStatusBar();
+                        updateNavigation(currentPageIndex);
+                    });
+                }
+            }
+        });
+        
+        // [삭제] 기존 recognition.on... 이벤트 리스너 모두 삭제
+        
+        function calculateAndShowScore() {
+            // 10 speech (2점) + 5 mcq (2점) + 10 speech-read (2점) = 25 퀴즈 * 2점 = 50점 만점
+            const totalScore = scores.reduce((sum, score) => sum + (score || 0), 0);
+            const maxScore = 50; 
+            
+            const scorePage = document.getElementById(`page-${totalQuizPages + 1}`);
+            scorePage.innerHTML = `
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800">Score Final</h2>
+                <p id="final-score" class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-sky-500 my-4 sm:my-6">${totalScore} / ${maxScore}</p>
+                <p id="evaluation-message" class="text-base sm:text-xl lg:text-2xl text-slate-600 max-w-2xl leading-relaxed"></p>
+                <button id="restart-btn" class="mt-6 bg-sky-500 text-white font-bold py-2 px-5 rounded-lg hover:bg-sky-600 transition-colors">Recommencer</button>
+            `;
+
+            const messageEl = scorePage.querySelector('#evaluation-message');
+            const percentage = (totalScore / maxScore) * 100;
+            if (percentage >= 85) { // 42.5+
+                messageEl.innerHTML = "Très bien ! Participez à d'autres programmes de &lt;LKWM programme en ligne&gt; !";
+            } else if (percentage >= 66) { // 33+
+                messageEl.innerHTML = "Bien joué ! Révisez les phrases que vous avez apprises et participez à d'autres programmes de &lt;LKWM programme en ligne&gt; !";
+            } else if (percentage >= 50) { // 25+
+                messageEl.innerHTML = "Bon travail ! Essayez de parler directement avec un professeur dans un cours privé ou en groupe de LKWM !";
+            } else if (percentage >= 33) { // 16.5+
+                messageEl.innerHTML = "Bon travail ! Pourquoi ne pas réviser et réessayer ? Essayez de parler directement avec un professeur dans un cours privé ou en groupe de LKWM !";
+            } else {
+                messageEl.innerHTML = "Bon travail ! Révisez les parties difficiles et réessayez le test. Essayez de parler directement avec un professeur dans un cours privé ou en groupe de LKWM !";
+            }
+
+            scorePage.querySelector('#restart-btn').addEventListener('click', () => {
+                currentPageIndex = 0;
+                scores = Array(totalQuizPages).fill(null);
+                attempts = {};
+                // [삭제] updateStatusBar();
+                showPage(0);
+            });
+        }
+        
+        showPage(currentPageIndex);
+    });
+    </script>
+</body>
+</html>
