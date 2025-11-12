@@ -75,6 +75,11 @@
                 padding: 2rem; /* lg:p-8 */
             }
         }
+        /* [추가] Suivant 버튼 비활성화 스타일 */
+        #next-btn:disabled {
+            background-color: #9ca3af; /* gray-400 */
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body class="bg-slate-100 flex items-center justify-center min-h-screen h-screen p-2 sm:p-4">
@@ -139,7 +144,8 @@
             <div class="justify-self-end flex gap-2">
                 <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
                 <button id="passer-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Passer</button>
-                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
+                <!-- [수정] 버튼 비활성화 시 스타일을 위해 disabled 속성 추가 -->
+                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors" disabled>Suivant</button>
             </div>
         </div>
     </div>
@@ -329,11 +335,8 @@
                 }
                 
                 const result = await response.json(); 
-
-                // [!!!] 수정: `result.raw`를 읽는 코드를 삭제하고, 백엔드가 반환하는 `result` 객체를 직접 사용합니다.
                 
                 const transcribedText = result.text || '';
-                // [!!!] 수정: 백엔드가 반환하는 `result.assessment.pronunciation_score`를 직접 읽습니다.
                 const score = (result.assessment ? result.assessment.pronunciation_score : 0) || 0;
 
                 if (transcriptEl) transcriptEl.textContent = `"${transcribedText || '...'}"`;
@@ -342,8 +345,8 @@
                 const normalizedReference = normalizeText(quiz.answer);
                 
                 const isTextMatch = (normalizedTranscribed === normalizedReference);
-                // [!!!] 님의 새 요청: 95점 컷
-                const isScorePass = score >= 95;
+                // [!!!] 님의 새 요청: 85점 컷
+                const isScorePass = score >= 85;
                 
                 const isCorrect = isTextMatch && isScorePass; 
                 let earnedPoints = 0;
@@ -355,14 +358,14 @@
                     if(micBtn) micBtn.disabled = true;
                     passerBtn.classList.add('hidden'); 
                     retryBtn.classList.add('hidden');
-                    // [!!!] 님의 요청: 95점 이상일 때 프랑스어 피드백 + 점수
+                    // [!!!] 님의 요청: 85점 이상일 때 프랑스어 피드백 + 점수
                     if(feedbackEl) {
                         feedbackEl.textContent = `Très bien ! (Score: ${score} / 100)`;
                         feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
                     }
 
                 } else {
-                    // [!!!] 님의 새 요청: 95점 미만이거나 텍스트가 틀리면 (1차 시도)
+                    // [!!!] 님의 새 요청: 85점 미만이거나 텍스트가 틀리면 (1차 시도)
                     if (isFirstAttempt) {
                         scores[quizIndex] = null; 
                         wrongSound?.triggerAttackRelease('A#2', '0.2s');
@@ -387,17 +390,15 @@
                     }
                 }
 
-                // 부모 페이지로 원본 데이터 전송 (스크린샷과 동일한 형식)
                 window.parent.postMessage({
                     type: 'pronunciation_result',
                     quizId: quizIndex,
-                    naverScore: score, // Naver 원점수 (0-100)
-                    pointsAwarded: earnedPoints, // 획득 점수 (0, 1, 2)
+                    naverScore: score, 
+                    pointsAwarded: earnedPoints, 
                     transcribedText: transcribedText,
                     referenceText: quiz.answer,
                     isCorrect: isCorrect,
                     attempt: recognitionAttempts[quizIndex],
-                    // [!!!] 수정: 백엔드가 반환하는 `result.assessment` 객체를 그대로 전달
                     assessment: result.assessment || { pronunciation_score: score }
                 }, '*');
 
@@ -505,27 +506,35 @@
 
         const updateNavigation = (index) => {
             prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+            
+            // [!!!] 수정: Suivant 버튼 항상 표시
             nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+            nextBtn.classList.remove('hidden'); // hidden 클래스 제거
+            
             passerBtn.classList.add('hidden');
             retryBtn.classList.add('hidden');
             
             const quizIndex = pages[index].dataset.quizIndex;
             if (quizIndex !== undefined) {
                 const isAnswered = scores[quizIndex] !== null;
-                nextBtn.classList.toggle('hidden', !isAnswered);
+                
+                // [!!!] 수정: Suivant 버튼 활성화/비활성화 로직
+                nextBtn.disabled = !isAnswered;
 
                 const quiz = quizzes[quizIndex];
                 
                 if (quiz.type.startsWith('speech') && recognitionAttempts[quizIndex] >= 2 && scores[quizIndex] === 0) {
                     passerBtn.classList.remove('hidden');
-                    nextBtn.classList.add('hidden'); 
+                    nextBtn.disabled = true; // [수정] Passer가 나타나면 Suivant 비활성화
                 }
                 
                 if (quiz.type === 'mcq' && scores[quizIndex] === 0) {
                      retryBtn.classList.remove('hidden');
+                     nextBtn.disabled = true; // [수정] Retry가 나타나면 Suivant 비활성화
                 }
             } else {
-                nextBtn.classList.remove('hidden');
+                // 퀴즈 페이지가 아니면 Suivant 버튼 활성화
+                nextBtn.disabled = false;
             }
         };
 
@@ -534,6 +543,9 @@
         };
         
         nextBtn.addEventListener('click', () => {
+            // [수정] 비활성화 상태에서는 클릭 무시
+            if (nextBtn.disabled) return; 
+            
             if (currentPageIndex < totalPages - 1) {
                 pageTurnSound?.triggerAttackRelease('A5', '0.05s');
                 currentPageIndex++;
