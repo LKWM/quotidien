@@ -11,6 +11,8 @@
         body {
             font-family: 'Inter', 'Nanum Gothic', sans-serif;
             overflow: hidden; /* Prevent scrolling */
+            /* MODIFIED (Request 1): Use 100vh for better mobile viewport scaling */
+            height: 100vh;
         }
         /* [수정] 고정 크기, transform 관련 속성 모두 제거 */
         .course-container {
@@ -19,6 +21,8 @@
             /* height: 600px; -> h-full 클래스로 대체 */
             /* transform-origin: center; */
             /* transition: transform 0.2s ease-out; */
+            /* MODIFIED (Request 1): Prevent shrinking in flex body */
+            flex-shrink: 0;
         }
         .page {
             display: none;
@@ -158,6 +162,16 @@
         .prefilled-text {
             color: #4b5563;
         }
+
+        /* ADDED (Request 3): Style for disabled next button */
+        .btn-disabled,
+        .btn-disabled:hover {
+            background-color: #9ca3af; /* gray-400 */
+            color: #e5e7eb; /* gray-200 */
+            cursor: not-allowed;
+            opacity: 0.7;
+            border-color: #9ca3af;
+        }
     </style>
 </head>
 <!-- [수정] h-screen 추가, p-4 -> p-2 sm:p-4 로 패딩 축소 -->
@@ -227,20 +241,20 @@
                  <p class="mb-4 sm:mb-6 text-lg sm:text-xl lg:text-2xl">"<span class="font-bold text-sky-600 text-xl sm:text-2xl lg:text-3xl">안녕히 가세요</span>" est une salutation de départ, équivalente à "<span class="font-bold">Au revoir</span>", "<span class="font-bold">Partez bien</span>" ou "<span class="font-bold">Bon voyage</span>".</p>
                  <p class="mb-4 sm:mb-8 text-lg sm:text-xl lg:text-2xl">C'est une salutation que la personne qui reste adresse à celle qui part.</p>
                  <div class="flex items-center justify-center space-x-2 text-lg sm:text-3xl">
-                       <div class="text-center p-2 sm:p-3 bg-amber-100 rounded-lg">
-                           <p class="font-bold text-amber-800">안녕히</p>
-                           <p class="text-sm sm:text-lg text-amber-600 mt-1">Bien, en paix</p>
-                       </div>
-                       <p class="text-xl sm:text-4xl">+</p>
-                       <div class="text-center p-2 sm:p-3 bg-teal-100 rounded-lg">
-                           <p class="font-bold text-teal-800">가</p>
-                           <p class="text-sm sm:text-lg text-teal-600 mt-1">Radical de 가다 (aller)</p>
-                       </div>
-                       <p class="text-xl sm:text-4xl">+</p>
-                       <div class="text-center p-2 sm:p-3 bg-indigo-100 rounded-lg">
-                           <p class="font-bold text-indigo-800">세요</p>
-                           <p class="text-sm sm:text-lg text-indigo-600 mt-1">Terminaison impérative polie</p>
-                       </div>
+                        <div class="text-center p-2 sm:p-3 bg-amber-100 rounded-lg">
+                             <p class="font-bold text-amber-800">안녕히</p>
+                             <p class="text-sm sm:text-lg text-amber-600 mt-1">Bien, en paix</p>
+                        </div>
+                        <p class="text-xl sm:text-4xl">+</p>
+                        <div class="text-center p-2 sm:p-3 bg-teal-100 rounded-lg">
+                             <p class="font-bold text-teal-800">가</p>
+                             <p class="text-sm sm:text-lg text-teal-600 mt-1">Radical de 가다 (aller)</p>
+                        </div>
+                        <p class="text-xl sm:text-4xl">+</p>
+                        <div class="text-center p-2 sm:p-3 bg-indigo-100 rounded-lg">
+                             <p class="font-bold text-indigo-800">세요</p>
+                             <p class="text-sm sm:text-lg text-indigo-600 mt-1">Terminaison impérative polie</p>
+                        </div>
                  </div>
             </div>
 
@@ -368,132 +382,132 @@
             <!-- [수정] 텍스트, 버튼 크기 축소 (반응형) -->
             <div id="page-11" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-6" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="desole" class="text-sky-600 font-bold hover:underline">"Désolé"</button> en utilisant le clavier coréen.</h2>
-                    <div class="quiz-input-container">
-                        <button type="button" data-audio="desole" class="audio-hint-btn">
-                            <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </button>
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="6" style="min-width: 10rem; sm:min-width: 15rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="6"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="desole" class="text-sky-600 font-bold hover:underline">"Désolé"</button> en utilisant le clavier coréen.</h2>
+                     <div class="quiz-input-container">
+                         <button type="button" data-audio="desole" class="audio-hint-btn">
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                         </button>
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="6" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="6"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 12: Keyboard Quiz -->
             <div id="page-12" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-7" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="restez-bien" class="text-sky-600 font-bold hover:underline">"Restez bien"</button> en utilisant le clavier coréen.</h2>
-                    <div class="quiz-input-container">
-                        <button type="button" data-audio="restez-bien" class="audio-hint-btn">
-                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </button>
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="7" style="min-width: 10rem; sm:min-width: 15rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="7"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="restez-bien" class="text-sky-600 font-bold hover:underline">"Restez bien"</button> en utilisant le clavier coréen.</h2>
+                     <div class="quiz-input-container">
+                         <button type="button" data-audio="restez-bien" class="audio-hint-btn">
+                               <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                         </button>
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="7" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="7"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 13: Keyboard Quiz -->
             <div id="page-13" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-8" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en utilisant le clavier coréen.</h2>
-                      <div class="quiz-input-container">
-                        <button type="button" data-audio="merci" class="audio-hint-btn">
-                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </button>
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="8" style="min-width: 10rem; sm:min-width: 15rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="8"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en utilisant le clavier coréen.</h2>
+                       <div class="quiz-input-container">
+                         <button type="button" data-audio="merci" class="audio-hint-btn">
+                               <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                         </button>
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="8" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="8"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 14: Keyboard Quiz -->
             <div id="page-14" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-9" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
-                      <div class="quiz-input-container">
-                        <button type="button" data-audio="partez-bien" class="audio-hint-btn">
-                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </button>
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="9" style="min-width: 6rem; sm:min-width: 9rem;"></span><span class="prefilled-text"> 가세요</span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="9"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                       <div class="quiz-input-container">
+                         <button type="button" data-audio="partez-bien" class="audio-hint-btn">
+                               <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                         </button>
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="9" style="min-width: 6rem; sm:min-width: 9rem;"></span><span class="prefilled-text"> 가세요</span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="9"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 15: Keyboard Quiz -->
             <div id="page-15" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-10" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
-                      <div class="quiz-input-container">
-                        <button type="button" data-audio="partez-bien" class="audio-hint-btn">
-                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </button>
-                        <div class="quiz-input-wrapper">
-                            <span class="prefilled-text">안녕히 </span><span class="quiz-input" data-quiz-id="10" style="min-width: 6rem; sm:min-width: 9rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="10"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                       <div class="quiz-input-container">
+                         <button type="button" data-audio="partez-bien" class="audio-hint-btn">
+                               <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                         </button>
+                         <div class="quiz-input-wrapper">
+                             <span class="prefilled-text">안녕히 </span><span class="quiz-input" data-quiz-id="10" style="min-width: 6rem; sm:min-width: 9rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="10"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 16: Keyboard Quiz -->
             <div id="page-16" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-11" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
-                      <div class="quiz-input-container">
-                        <button type="button" data-audio="partez-bien" class="audio-hint-btn">
-                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                        </button>
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="11" style="min-width: 10rem; sm:min-width: 15rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="11"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                       <div class="quiz-input-container">
+                         <button type="button" data-audio="partez-bien" class="audio-hint-btn">
+                               <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                         </button>
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="11" style="min-width: 10rem; sm:min-width: 15rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="11"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 17: Final Keyboard Quiz -->
             <div id="page-17" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-12" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Merci, partez bien." en utilisant le clavier.</h2>
-                      <div class="quiz-input-container">
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="12" style="min-width: 12rem; sm:min-width: 15rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="12"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Merci, partez bien." en utilisant le clavier.</h2>
+                       <div class="quiz-input-container">
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="12" style="min-width: 12rem; sm:min-width: 15rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="12"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 18: Final Keyboard Quiz 2 -->
             <div id="page-18" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-13" class="w-full max-w-xl flex flex-col items-center">
-                    <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Désolé. Restez bien." en utilisant le clavier.</h2>
-                      <div class="quiz-input-container">
-                        <div class="quiz-input-wrapper">
-                            <span class="quiz-input" data-quiz-id="13" style="min-width: 12rem; sm:min-width: 15rem;"></span>
-                        </div>
-                    </div>
-                    <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="13"></div>
-                    <div class="feedback-message text-base sm:text-xl"></div>
-                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
-                </form>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Désolé. Restez bien." en utilisant le clavier.</h2>
+                       <div class="quiz-input-container">
+                         <div class="quiz-input-wrapper">
+                             <span class="quiz-input" data-quiz-id="13" style="min-width: 12rem; sm:min-width: 15rem;"></span>
+                         </div>
+                     </div>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="13"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
+                 </form>
             </div>
             <!-- Page 19: End -->
             <!-- [수정] 텍스트 크기 축소 (반응형) -->
@@ -602,7 +616,10 @@
             // [수정] 마지막 페이지(19) 도달 시 사운드 재생 및 postMessage 전송
             if (index === totalPages - 1) { // totalPages 20, last index 19
                 // [요청 사항] 부모 페이지에 완료 메시지 전송
-                window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                // MODIFIED (Request 2): Changed message to a simple string
+                if (window.parent) {
+                    window.parent.postMessage('lessonCompleted', '*');
+                }
                 console.log('Lesson complete message sent to parent.');
 
                 if (soundsReady) {
@@ -610,25 +627,41 @@
                 }
             }
         };
+        
+        // MODIFIED (Request 3): Update navigation logic
         const updateNavigation = (index) => {
             prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
             const currentPage = pages[index];
             const isQuizPage = currentPage.querySelector('form') !== null;
             const isQuizAnswered = currentPage.dataset.answered === 'true';
-            retryBtn.classList.add('hidden');
-            if (isQuizPage && !isQuizAnswered) {
-                nextBtn.classList.add('hidden');
+            retryBtn.classList.add('hidden'); // Always hide retry on page load
+
+            // Handle Next Button Visibility
+            if (index < totalPages - 1) {
+                nextBtn.style.visibility = 'visible';
             } else {
-                nextBtn.classList.remove('hidden');
-                nextBtn.style.visibility = index < totalPages - 1 ? 'visible' : 'hidden';
+                nextBtn.style.visibility = 'hidden';
+            }
+
+            // Handle Next Button Disabled State
+            if (isQuizPage && !isQuizAnswered) {
+                nextBtn.disabled = true;
+                nextBtn.classList.add('btn-disabled');
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('btn-disabled');
             }
         };
+
         const updateProgressBar = (index) => {
             progressBar.style.width = `${((index + 1) / totalPages) * 100}%`;
         };
         
         // --- Navigation Events ---
         nextBtn.addEventListener('click', async () => {
+            // MODIFIED (Request 3): Do not advance if disabled
+            if (nextBtn.disabled) return; 
+
             await initAudio();
             if (currentPageIndex < totalPages - 1) {
                 currentPageIndex++;
@@ -795,7 +828,7 @@
                     const exclamBtn = document.createElement('button'); // [수정] ! 키 추가
                     Object.assign(exclamBtn, { type: 'button', className: 'key', textContent: '!'});
                     exclamBtn.dataset.char = '!';
-                    bottomRow.append(shiftBtn, spaceBtn, commaBtn, periodBtn, exclamBtn, backspaceBtn);
+                    bottomRow.append(shiftBtn, spaceBtn, commaBtn, periodBtn, backspaceBtn); // [FIX] Added periodBtn
                 } else {
                     bottomRow.append(shiftBtn, spaceBtn, backspaceBtn);
                 }
@@ -827,7 +860,8 @@
         const quizzes = [
             { id: 'quiz-1', pageIndex: 6, type: 'radio', answer: '안녕히 가세요' },
             { id: 'quiz-2', pageIndex: 7, type: 'radio', answer: '죄송합니다' },
-            { id: 'quiz-3', pageIndex: 8, type: 'order', answer: ['안녕히', '가세요'], options: ['안녕', '세요', '계세요', '하세요', '안녕히', '합니다'] },
+            // MODIFIED (Request 4): Added '가세요' to the options array
+            { id: 'quiz-3', pageIndex: 8, type: 'order', answer: ['안녕히', '가세요'], options: ['안녕', '세요', '계세요', '하세요', '안녕히', '합니다', '가세요'] },
             { id: 'quiz-4', pageIndex: 9, type: 'order', answer: ['감','사','합','니','다'], options: ['합','세','사','니', '하','죄','해','감','다','송','안'] },
             { id: 'quiz-5', pageIndex: 10, type: 'order', answer: ['안','녕','하','세','요'], options: ['합','세','요','니','죄','사','감','녕','송','안','다','하'] },
             { id: 'quiz-6', pageIndex: 11, type: 'keyboard', answer: '죄송합니다', altAnswer: '죄송해요' },
@@ -914,17 +948,23 @@
             }
         };
 
+        // MODIFIED (Request 3): Update reset logic
         const resetQuiz = (quizId) => {
             const form = document.getElementById(quizId);
             if (!form) return;
+
+            // [MOD] Set answered to false *before* calling updateNavigation
+            form.closest('.page').dataset.answered = 'false'; 
+
             form.querySelector('.feedback-message').innerHTML = '';
             form.querySelector('button[type=submit]').classList.remove('hidden');
             retryBtn.classList.add('hidden');
-            nextBtn.classList.add('hidden');
-            form.closest('.page').dataset.answered = 'false'; // [수정] 답변 상태 리셋
+
+            // [MOD] Call updateNavigation to correctly set disabled state
+            updateNavigation(currentPageIndex); 
 
             const quizInfo = quizzes.find(q => q.id === quizId);
-            if (!quizInfo) return; // [수정] 퀴즈 정보 없으면 종료
+            if (!quizInfo) return;
             
             if (quizInfo.type === 'radio') {
                 form.reset();
@@ -994,13 +1034,17 @@
                     feedbackEl.textContent = 'Correct !';
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500'; // 반응형 텍스트
                     form.closest('.page').dataset.answered = 'true';
-                    updateNavigation(currentPageIndex);
+                    updateNavigation(currentPageIndex); // [MOD] This will re-enable the next button
                 } else {
                     if (soundsReady) wrongSound.triggerAttackRelease('A#2', '0.2s');
                     feedbackEl.textContent = 'Ce n\'est pas correct.';
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500'; // 반응형 텍스트
                     retryBtn.classList.remove('hidden');
-                    nextBtn.classList.add('hidden');
+                    
+                    // MODIFIED (Request 3): Don't hide nextBtn, just disable it
+                    nextBtn.style.visibility = 'visible'; // Ensure it's visible
+                    nextBtn.disabled = true;
+                    nextBtn.classList.add('btn-disabled');
                 }
             });
         });
@@ -1048,6 +1092,7 @@
 
         // --- Initialisation ---
         showPage(currentPageIndex);
+        // Use both click and touchstart for faster audio init on mobile
         document.body.addEventListener('click', initAudio, { once: true });
         document.body.addEventListener('touchstart', initAudio, { once: true });
     });
