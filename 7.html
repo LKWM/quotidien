@@ -12,11 +12,10 @@
             font-family: 'Inter', 'Nanum Gothic', sans-serif;
             overflow: hidden; /* Prevent scrolling on body */
         }
-        /* 반응형 컨테이너 설정 (Leçon 5 스타일) */
+        /* 반응형 컨테이너 설정 */
         .course-container {
             width: 100%;
             max-width: 1000px;
-            /* height는 h-full 클래스로 제어 */
         }
         .page {
             display: none;
@@ -470,13 +469,20 @@
             </div>
         </div>
 
-        <!-- Navigation -->
-        <div id="navigation-bar" class="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-0 right-0 px-4 sm:px-8 flex justify-between items-center">
-            <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
-            <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
+        <!-- Navigation: Grid for fixed layout -->
+        <div id="navigation-bar" class="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-0 right-0 px-4 sm:px-8 grid grid-cols-[80px_1fr_80px] sm:grid-cols-[120px_1fr_120px] items-center gap-4">
+            <!-- Left: Previous Button -->
+            <div class="flex justify-start">
+                <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+            </div>
+            
+            <!-- Center: Progress Bar -->
+            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                 <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
             </div>
-            <div class="flex gap-2">
+            
+            <!-- Right: Next/Retry Buttons -->
+            <div class="flex justify-end gap-2">
                 <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
                 <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
             </div>
@@ -556,26 +562,30 @@
         };
         
         const updateNavigation = (index) => {
+            // Use visibility to maintain layout
             prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+            
             const currentPage = pages[index];
             const isQuizPage = currentPage.querySelector('form') !== null;
             const isQuizAnswered = currentPage.dataset.answered === 'true';
 
-            retryBtn.classList.add('hidden'); // Always hide retry btn on page load
+            retryBtn.classList.add('hidden'); // Retry button still toggles display (hidden class)
 
             // Handle Next Button Visibility
             if (index === totalPages - 1) {
-                nextBtn.classList.add('hidden');
+                nextBtn.style.visibility = 'hidden';
             } else {
-                nextBtn.classList.remove('hidden');
                 nextBtn.style.visibility = 'visible';
             }
             
-            // Handle Next Button Disabled State
+            // Handle Next Button Disabled State (visually hidden but technically visibility toggle)
             if (isQuizPage && !isQuizAnswered) {
-                nextBtn.classList.add('hidden');
+                nextBtn.style.visibility = 'hidden';
             } else {
-                nextBtn.classList.remove('hidden');
+                // If not last page, show it
+                if (index !== totalPages - 1) {
+                    nextBtn.style.visibility = 'visible';
+                }
             }
         };
 
@@ -587,8 +597,7 @@
         nextBtn.addEventListener('click', async () => {
             await initAudio();
             
-            // Send postMessage when clicking next on the 2nd to last page (transitioning to completion page)
-            // Page 18 (index 18) -> Page 19 (index 19, completion)
+            // Send postMessage when clicking next on the 2nd to last page
             if (currentPageIndex === totalPages - 2) {
                 if (parent) {
                    parent.postMessage('lessonCompleted', '*');
@@ -874,7 +883,9 @@
             form.querySelector('.feedback-message').innerHTML = '';
             form.querySelector('button[type=submit]').classList.remove('hidden');
             retryBtn.classList.add('hidden');
-            nextBtn.classList.add('hidden');
+            
+            // Just update navigation to hide next button
+            updateNavigation(currentPageIndex);
             
             const quizInfo = quizzes.find(q => q.id === quizId);
             if (quizInfo.type === 'radio') form.reset();
@@ -950,18 +961,19 @@
                     feedbackEl.textContent = 'Ce n\'est pas correct.';
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                     retryBtn.classList.remove('hidden');
-                    nextBtn.classList.add('hidden');
+                    nextBtn.style.visibility = 'hidden';
                 }
             });
         });
         
         // --- Physical Keyboard Input Handler ---
-        const keyToHangulMap = {
-            'q': 'ㅂ', 'w': 'ㅈ', 'e': 'ㄷ', 'r': 'ㄱ', 't': 'ㅅ', 'y': 'ㅛ', 'u': 'ㅕ', 'i': 'ㅑ', 'o': 'ㅐ', 'p': 'ㅔ',
-            'a': 'ㅁ', 's': 'ㄴ', 'd': 'ㅇ', 'f': 'ㄹ', 'g': 'ㅎ', 'h': 'ㅗ', 'j': 'ㅓ', 'k': 'ㅏ', 'l': 'ㅣ',
-            'z': 'ㅋ', 'x': 'ㅌ', 'c': 'ㅊ', 'v': 'ㅍ', 'b': 'ㅠ', 'n': 'ㅜ', 'm': 'ㅡ',
-            'Q': 'ㅃ', 'W': 'ㅉ', 'E': 'ㄸ', 'R': 'ㄲ', 'T': 'ㅆ', 'O': 'ㅒ', 'P': 'ㅖ'
-        };
+        // Lists of valid Korean chars to accept from physical keyboard
+        const KOREAN_CHARS = new Set([
+            'ㅂ', 'ㅈ', 'ㄷ', 'ㄱ', 'ㅅ', 'ㅛ', 'ㅕ', 'ㅑ', 'ㅐ', 'ㅔ',
+            'ㅁ', 'ㄴ', 'ㅇ', 'ㄹ', 'ㅎ', 'ㅗ', 'ㅓ', 'ㅏ', 'ㅣ',
+            'ㅋ', 'ㅌ', 'ㅊ', 'ㅍ', 'ㅠ', 'ㅜ', 'ㅡ',
+            'ㅃ', 'ㅉ', 'ㄸ', 'ㄲ', 'ㅆ', 'ㅒ', 'ㅖ'
+        ]);
 
         window.addEventListener('keydown', (e) => {
             const currentPage = pages[currentPageIndex];
@@ -990,9 +1002,13 @@
             } else if (e.key === ' ' || e.key === ',' || e.key === '.' || e.key === '!' || e.key === '?') {
                 char = e.key;
                 e.preventDefault();
-            } else if (keyToHangulMap[e.key]) {
-                char = keyToHangulMap[e.key];
+            } else if (KOREAN_CHARS.has(e.key)) {
+                // Only accept if it is a valid Korean jamo
+                char = e.key;
                 e.preventDefault();
+            } else {
+                // Ignore other keys (like English QWERTY input)
+                return;
             }
             
             if (char) {
