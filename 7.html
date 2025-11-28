@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Le coréen au quotidien - Leçon 7: Bienvenue</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
@@ -10,17 +10,13 @@
     <style>
         body {
             font-family: 'Inter', 'Nanum Gothic', sans-serif;
-            overflow: hidden; /* Prevent scrolling */
-            /* MODIFIED (Request 1): Use 100vh for better mobile viewport scaling */
-            height: 100vh;
+            overflow: hidden; /* Prevent scrolling on body */
         }
+        /* 반응형 컨테이너 설정 (Leçon 5 스타일) */
         .course-container {
-            width: 1000px;
-            height: 600px;
-            transform-origin: center;
-            transition: transform 0.2s ease-out;
-            /* MODIFIED (Request 1): Prevent shrinking in flex body */
-            flex-shrink: 0;
+            width: 100%;
+            max-width: 1000px;
+            /* height는 h-full 클래스로 제어 */
         }
         .page {
             display: none;
@@ -38,40 +34,46 @@
             cursor: pointer;
         }
         .interactive-card:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+        
+        /* 반응형 오디오 버튼 */
         .audio-hint-btn {
             flex-shrink: 0;
             background-color: #dbeafe;
             color: #2563eb;
             border-radius: 9999px;
-            width: 44px;
-            height: 44px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background-color 0.2s;
         }
-        .audio-hint-btn:hover {
-            background-color: #bfdbfe;
+        @media (min-width: 640px) {
+            .audio-hint-btn { width: 44px; height: 44px; }
         }
+        .audio-hint-btn:hover { background-color: #bfdbfe; }
+        
         .quiz-option input:checked + label {
             background-color: #38bdf8;
             color: white;
             border-color: #0284c7;
         }
+        
+        /* 반응형 키보드 스타일 */
         .keyboard {
             display: grid;
-            gap: 4px;
-            padding: 8px;
+            gap: 2px;
+            padding: 4px;
             background-color: #e5e7eb;
             border-radius: 8px;
         }
         .keyboard-row {
             display: grid;
             grid-auto-flow: column;
-            gap: 4px;
+            gap: 2px;
         }
         .key {
             font-family: 'Nanum Gothic', sans-serif;
@@ -79,78 +81,84 @@
             background-color: white;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 4px 6px;
+            font-size: 0.875rem;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             transition: background-color 0.1s;
         }
+        @media (min-width: 640px) {
+            .keyboard { gap: 4px; padding: 8px; }
+            .keyboard-row { gap: 4px; }
+            .key { padding: 8px 12px; font-size: 1rem; }
+        }
         .key:hover { background-color: #f3f4f6; }
         .key:active { background-color: #d1d5db; }
+        
+        /* 반응형 퀴즈 박스 및 카드 */
         .order-answer-box {
-            min-height: 80px;
+            min-height: 50px;
             border: 2px dashed #9ca3af;
             background-color: #f9fafb;
         }
         .order-option-card, .order-answer-card {
-            font-size: 1.5rem;
             font-weight: 700;
-            padding: 1rem;
             border-radius: 0.5rem;
             background-color: white;
             border: 2px solid #e5e7eb;
         }
         .feedback-message {
-            height: 2rem;
+            height: 1.5rem;
             font-weight: bold;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
         .quiz-input-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
+            gap: 0.5rem;
             width: 100%;
-            max-width: 90%;
+            max-width: 95%;
             background-color: #f3f4f6;
-            padding: 1rem;
+            padding: 0.5rem;
             border-radius: 0.75rem;
         }
         .quiz-input-wrapper {
-            font-size: 2.25rem;
-            line-height: 2.5rem;
+            font-size: 1.5rem;
+            line-height: 2rem;
             font-weight: 700;
             flex-grow: 1;
             text-align: center;
         }
+        @media (min-width: 640px) {
+            .quiz-input-wrapper { font-size: 2.25rem; line-height: 2.5rem; }
+        }
         .quiz-input {
             color: #2563eb;
-            border-bottom: 4px solid #3b82f6;
-            min-height: 48px;
+            border-bottom: 3px solid #3b82f6;
+            min-height: 32px;
             display: inline-block;
         }
-        .prefilled-text {
-            color: #4b5563;
-        }
+        .prefilled-text { color: #4b5563; }
         
-        /* ADDED (Request 3): Style for disabled next button */
         .btn-disabled,
         .btn-disabled:hover {
-            background-color: #9ca3af; /* gray-400 */
-            color: #e5e7eb; /* gray-200 */
+            background-color: #9ca3af;
+            color: #e5e7eb;
             cursor: not-allowed;
             opacity: 0.7;
             border-color: #9ca3af;
         }
     </style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+<body class="bg-slate-100 flex items-center justify-center min-h-screen h-screen p-2 sm:p-4">
 
-    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-8 relative overflow-hidden">
+    <!-- Fluid container structure -->
+    <div id="course-container" class="course-container bg-white rounded-2xl shadow-2xl flex flex-col p-4 sm:p-6 lg:p-8 relative overflow-hidden h-full">
         
         <!-- Audio elements -->
-        <!-- New sounds for this lesson -->
         <audio id="audio-eoseo-oseyo" src="https://static.wixstatic.com/mp3/699687_7ec4bd8864f64a46b9a2306548216591.mp3" preload="auto"></audio>
         <audio id="audio-eoseo-oseyo-fast" src="https://static.wixstatic.com/mp3/699687_0c9ed09fb25e49548fcc9e03b2cce410.mp3" preload="auto"></audio>
         <audio id="audio-eoseo" src="https://static.wixstatic.com/mp3/699687_39014a423dae4f1b8ee7a829a6fac8d1.mp3" preload="auto"></audio>
@@ -158,9 +166,10 @@
         <audio id="audio-eo" src="https://static.wixstatic.com/mp3/699687_976442469fc84977bf7a18ed799bb0e5.mp3" preload="auto"></audio>
         <audio id="audio-seo" src="https://static.wixstatic.com/mp3/699687_b29cb9f5b83a4344919d174de864ac4a.mp3" preload="auto"></audio>
         <audio id="audio-o" src="https://static.wixstatic.com/mp3/699687_000df89b91b54bf4b2ad4f6f46fcf256.mp3" preload="auto"></audio>
+        <audio id="audio-se" src="https://static.wixstatic.com/mp3/699687_6ecec239c8d044c4a39cd6e91805f4b1.mp3" preload="auto"></audio>
+        <audio id="audio-yo" src="https://static.wixstatic.com/mp3/699687_311e7d2a0a76423b8c58747cc5dcf4f6.mp3" preload="auto"></audio>
         <audio id="audio-bienvenue" src="https://static.wixstatic.com/mp3/699687_7ec4bd8864f64a46b9a2306548216591.mp3" preload="auto"></audio>
 
-        <!-- Sounds from previous lessons (for review) -->
         <audio id="audio-joesonghamnida" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
         <audio id="audio-desole" src="https://static.wixstatic.com/mp3/699687_ff89caa097ee4b78a44f9fe2cb4245cd.mp3" preload="auto"></audio>
         <audio id="audio-bonjour" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
@@ -172,348 +181,312 @@
         <audio id="audio-gamsa" src="https://static.wixstatic.com/mp3/699687_7f67a54b7706491f9f7c591927c3e7c6.mp3" preload="auto"></audio>
         <audio id="audio-annyeonghaseyo" src="https://static.wixstatic.com/mp3/699687_eecd04cdedb149b383bf501e72cbae2a.mp3" preload="auto"></audio>
         <audio id="audio-gamsahamnida" src="https://static.wixstatic.com/mp3/699687_cbf26bae6c624aeabbe85140522122c7.mp3" preload="auto"></audio>
-        <audio id="audio-joe" src="https://static.wixstatic.com/mp3/699687_6e9892fe87da4f89adeb32563f07b5fb.mp3" preload="auto"></audio>
-        <audio id="audio-song" src="https://static.wixstatic.com/mp3/699687_05d7edc14c914ccf8946c45d2bd8ab09.mp3" preload="auto"></audio>
-        <audio id="audio-hap" src="https://static.wixstatic.com/mp3/699687_faa104c0b2474908a9f5d21fc44631ed.mp3" preload="auto"></audio>
-        <audio id="audio-ni" src="https://static.wixstatic.com/mp3/699687_8ad286c1b292465983529b464b024146.mp3" preload="auto"></audio>
-        <audio id="audio-da" src="https://static.wixstatic.com/mp3/699687_0bdad4f5a6ce461ebc4adf1bddf51498.mp3" preload="auto"></audio>
-        <audio id="audio-an" src="https://static.wixstatic.com/mp3/699687_e1dd2a0576b0424cbfe64d4c75c84162.mp3" preload="auto"></audio>
-        <audio id="audio-nyeong" src="https://static.wixstatic.com/mp3/699687_c7d231f8a10b46e0acc1bbb68a3455d7.mp3" preload="auto"></audio>
-        <audio id="audio-se" src="https://static.wixstatic.com/mp3/699687_6ecec239c8d044c4a39cd6e91805f4b1.mp3" preload="auto"></audio>
-        <audio id="audio-yo" src="https://static.wixstatic.com/mp3/699687_311e7d2a0a76423b8c58747cc5dcf4f6.mp3" preload="auto"></audio>
-        <audio id="audio-hi" src="https://static.wixstatic.com/mp3/699687_c80b2797bb95449484670f900eecad6c.mp3" preload="auto"></audio>
-        <audio id="audio-annyeonghi" src="https://static.wixstatic.com/mp3/699687_a5b48c52e580453897f188a8006b3acf.mp3" preload="auto"></audio>
-        <audio id="audio-gye" src="https://static.wixstatic.com/mp3/699687_722d97e13ce94e6bb0e359b2e47f00dc.mp3" preload="auto"></audio>
-        <audio id="audio-gyeseyo" src="https://static.wixstatic.com/mp3/699687_0e59a55005054289831ef5dfdc4c0b65.mp3" preload="auto"></audio>
         <audio id="audio-annyeonghi-gyeseyo" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio>
         <audio id="audio-annyeonghi-gaseyo" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio>
-        <audio id="audio-gaseyo" src="https://static.wixstatic.com/mp3/699687_fe6ef4d015bb4b3cbc6cc74797139a82.mp3" preload="auto"></audio>
-        <audio id="audio-gam" src="https://static.wixstatic.com/mp3/699687_6b6cae3747684bb799f41099172aa97d.mp3" preload="auto"></audio>
-        <audio id="audio-sa" src="https://static.wixstatic.com/mp3/699687_43644e63ec854f52b8a350f7ed47ad1d.mp3" preload="auto"></audio>
-        <audio id="audio-ha" src="https://static.wixstatic.com/mp3/699687_a0f34fda671440c2b8861c920feb91ae.mp3" preload="auto"></audio>
         <audio id="audio-restez-bien" src="https://static.wixstatic.com/mp3/699687_5e79d505dcae46adb3887b03d5a28905.mp3" preload="auto"></audio>
         <audio id="audio-partez-bien" src="https://static.wixstatic.com/mp3/699687_450c2b7baf664c4a8d3fc1423de8a5e7.mp3" preload="auto"></audio>
         
-        <!-- Page content will be dynamically displayed here -->
-        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center">
+        <!-- Page content -->
+        <div id="page-content" class="flex-grow flex flex-col justify-center items-center text-center overflow-auto">
             
             <!-- Page 0: Title -->
-            <div id="page-0" class="page w-full h-full flex-col md:flex-row justify-center items-center gap-8">
+            <div id="page-0" class="page w-full h-full flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
                 <div class="flex flex-col items-center">
-                    <button data-audio="eoseo-oseyo" class="interactive-card text-6xl md:text-7xl font-extrabold text-slate-800 mb-2 bg-sky-100 px-6 py-3 rounded-2xl">어서 오세요</button>
-                    <p class="text-4xl font-semibold text-sky-600 mt-2">Bienvenue !</p>
+                    <button data-audio="eoseo-oseyo" class="interactive-card text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-800 mb-2 bg-sky-100 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl">어서 오세요</button>
+                    <p class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-sky-600 mt-1 sm:mt-2">Bienvenue !</p>
                 </div>
                 <img src="https://static.wixstatic.com/media/699687_db0b4a88503e40869144f899f74f6413~mv2.png" 
                      alt="Illustration of a person welcoming" 
-                     class="w-48 h-48 md:w-64 md:h-64 object-contain"
+                     class="w-24 h-24 sm:w-36 sm:h-36 md:w-64 md:h-64 object-contain"
                      onerror="this.style.display='none'">
             </div>
 
             <!-- Page 1: Explanation -->
-            <div id="page-1" class="page w-full h-full flex-col justify-center items-center text-xl text-slate-700 leading-relaxed max-w-4xl">
-                 <p class="mb-6 text-2xl">"<span class="font-bold text-sky-600 text-3xl">어서 오세요</span>" signifie "venez rapidement" et est utilisé pour accueillir quelqu'un. Cela correspond à "<span class="font-bold">Bienvenue</span>" en français.</p>
-                 <div class="flex items-center justify-center space-x-2 text-3xl">
-                     <div class="text-center p-3 bg-amber-100 rounded-lg">
+            <div id="page-1" class="page w-full h-full flex-col justify-center items-center text-base sm:text-lg lg:text-xl text-slate-700 leading-relaxed max-w-4xl">
+                 <p class="mb-4 sm:mb-6 text-lg sm:text-xl lg:text-2xl">"<span class="font-bold text-sky-600 text-xl sm:text-2xl lg:text-3xl">어서 오세요</span>" signifie "venez rapidement" et est utilisé pour accueillir quelqu'un. Cela correspond à "<span class="font-bold">Bienvenue</span>" en français.</p>
+                 <div class="flex items-center justify-center space-x-2 text-lg sm:text-3xl">
+                     <div class="text-center p-2 sm:p-3 bg-amber-100 rounded-lg">
                          <p class="font-bold text-amber-800">어서</p>
-                         <p class="text-lg text-amber-600 mt-1">rapidement</p>
+                         <p class="text-sm sm:text-lg text-amber-600 mt-1">rapidement</p>
                      </div>
-                     <p class="text-4xl">+</p>
-                     <div class="text-center p-3 bg-teal-100 rounded-lg">
+                     <p class="text-xl sm:text-4xl">+</p>
+                     <div class="text-center p-2 sm:p-3 bg-teal-100 rounded-lg">
                          <p class="font-bold text-teal-800">오</p>
-                         <p class="text-lg text-teal-600 mt-1">venir (radical)</p>
+                         <p class="text-sm sm:text-lg text-teal-600 mt-1">venir (radical)</p>
                      </div>
-                     <p class="text-4xl">+</p>
-                     <div class="text-center p-3 bg-indigo-100 rounded-lg">
+                     <p class="text-xl sm:text-4xl">+</p>
+                     <div class="text-center p-2 sm:p-3 bg-indigo-100 rounded-lg">
                          <p class="font-bold text-indigo-800">세요</p>
-                         <p class="text-lg text-indigo-600 mt-1">suffixe impératif poli</p>
+                         <p class="text-sm sm:text-lg text-indigo-600 mt-1">suffixe impératif poli</p>
                      </div>
                  </div>
             </div>
 
             <!-- Page 2: Syllable practice -->
             <div id="page-2" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-3xl font-semibold text-slate-800 mb-8">Répétez chaque syllabe.</h2>
-                <div class="flex justify-center items-center gap-2 md:gap-4">
-                    <button data-audio="eo" class="interactive-card text-5xl md:text-6xl font-bold text-slate-700 p-4 bg-slate-100 rounded-xl">어</button>
-                    <button data-audio="seo" class="interactive-card text-5xl md:text-6xl font-bold text-slate-700 p-4 bg-slate-100 rounded-xl">서</button>
-                    <div class="w-8"></div>
-                    <button data-audio="o" class="interactive-card text-5xl md:text-6xl font-bold text-slate-700 p-4 bg-slate-100 rounded-xl">오</button>
-                    <button data-audio="se" class="interactive-card text-5xl md:text-6xl font-bold text-slate-700 p-4 bg-slate-100 rounded-xl">세</button>
-                    <button data-audio="yo" class="interactive-card text-5xl md:text-6xl font-bold text-slate-700 p-4 bg-slate-100 rounded-xl">요</button>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-800 mb-4 sm:mb-8">Répétez chaque syllabe.</h2>
+                <div class="flex justify-center items-center gap-1 sm:gap-2 md:gap-4">
+                    <button data-audio="eo" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">어</button>
+                    <button data-audio="seo" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">서</button>
+                    <div class="w-4 sm:w-8"></div>
+                    <button data-audio="o" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">오</button>
+                    <button data-audio="se" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">세</button>
+                    <button data-audio="yo" class="interactive-card text-2xl sm:text-4xl lg:text-6xl font-bold text-slate-700 p-2 sm:p-3 lg:p-4 bg-slate-100 rounded-xl">요</button>
                 </div>
             </div>
 
             <!-- Page 3: Read together -->
             <div id="page-3" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-3xl font-semibold text-slate-800 mb-8">Maintenant, lisez tout en une fois.</h2>
-                <button data-audio="eoseo-oseyo" class="interactive-card text-6xl md:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 px-6 py-3 rounded-2xl">어서 오세요</button>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-800 mb-4 sm:mb-8">Maintenant, lisez tout en une fois.</h2>
+                <button data-audio="eoseo-oseyo" class="interactive-card text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl">어서 오세요</button>
             </div>
 
             <!-- Page 4: Pronunciation tip 1 -->
             <div id="page-4" class="page w-full h-full flex-col justify-center items-center max-w-3xl">
-                <p class="text-2xl text-center font-semibold text-slate-800 mb-8">
+                <p class="text-lg sm:text-2xl text-center font-semibold text-slate-800 mb-4 sm:mb-8">
                     "어서 오세요" est composé de deux mots, mais les locuteurs natifs le prononcent souvent sans pause, comme un seul mot.
                     <br><br>
                     Cependant, il est important de laisser un espace à l'écrit.
                 </p>
-                <button data-audio="eoseo-oseyo" class="interactive-card text-6xl md:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 px-6 py-3 rounded-2xl hover:bg-sky-200 transition-colors">어서 오세요</button>
+                <button data-audio="eoseo-oseyo" class="interactive-card text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl hover:bg-sky-200 transition-colors">어서 오세요</button>
             </div>
 
             <!-- Page 5: Pronunciation tip 2 -->
-            <div id="page-5" class="page w-full h-full flex-col justify-center items-center text-xl max-w-3xl">
-                <p class="mb-6">Les Coréens le prononcent plus rapidement. Dans ce cas, la syllabe '오', qui n'a pas de consonne initiale, peut ne pas être prononcée distinctement.</p>
-                <button data-audio="eoseo-oseyo-fast" class="interactive-card text-6xl md:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 hover:bg-sky-200 transition-colors px-6 py-3 rounded-2xl">어서 오세요</button>
+            <div id="page-5" class="page w-full h-full flex-col justify-center items-center text-base sm:text-xl max-w-3xl">
+                <p class="mb-4 sm:mb-6">Les Coréens le prononcent plus rapidement. Dans ce cas, la syllabe '오', qui n'a pas de consonne initiale, peut ne pas être prononcée distinctement.</p>
+                <button data-audio="eoseo-oseyo-fast" class="interactive-card text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-800 mb-4 bg-sky-100 hover:bg-sky-200 transition-colors px-4 py-2 sm:px-6 sm:py-3 rounded-2xl">어서 오세요</button>
             </div>
 
             <!-- Page 6: Quiz 1 -->
             <div id="page-6" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-2xl font-semibold text-slate-800 mb-6">Comment dit-on <button data-audio="bonjour" class="text-sky-600 font-bold hover:underline">"Bonjour"</button> en coréen ?</h2>
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4 sm:mb-6">Comment dit-on <button data-audio="bonjour" class="text-sky-600 font-bold hover:underline">"Bonjour"</button> en coréen ?</h2>
                 <form id="quiz-1" class="w-full max-w-md">
-                    <div class="space-y-4">
-                        <div class="quiz-option"><input type="radio" name="q1" value="안녕하세요" id="q1a1" class="hidden"><label for="q1a1" class="block cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-2xl font-bold">안녕하세요</label></div>
-                        <div class="quiz-option"><input type="radio" name="q1" value="안녕히 계세요" id="q1a2" class="hidden"><label for="q1a2" class="block cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-2xl font-bold">안녕히 계세요</label></div>
-                        <div class="quiz-option"><input type="radio" name="q1" value="감사합니다" id="q1a3" class="hidden"><label for="q1a3" class="block cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-2xl font-bold">감사합니다</label></div>
+                    <div class="space-y-2 sm:space-y-4">
+                        <div class="quiz-option"><input type="radio" name="q1" value="안녕하세요" id="q1a1" class="hidden"><label for="q1a1" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">안녕하세요</label></div>
+                        <div class="quiz-option"><input type="radio" name="q1" value="안녕히 계세요" id="q1a2" class="hidden"><label for="q1a2" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">안녕히 계세요</label></div>
+                        <div class="quiz-option"><input type="radio" name="q1" value="감사합니다" id="q1a3" class="hidden"><label for="q1a3" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">감사합니다</label></div>
                     </div>
-                    <div class="feedback-message text-xl"></div>
-                    <button type="submit" class="w-full mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 transition-colors text-sm sm:text-base">Vérifier</button>
                 </form>
             </div>
             
             <!-- Page 7: Quiz 2 (Review) -->
             <div id="page-7" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-2xl font-semibold text-slate-800 mb-6">Comment dit-on <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en coréen ?</h2>
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4 sm:mb-6">Comment dit-on <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en coréen ?</h2>
                 <form id="quiz-2" class="w-full max-w-md">
-                    <div class="space-y-4">
-                        <div class="quiz-option"><input type="radio" name="q2" value="죄송합니다" id="q2a1" class="hidden"><label for="q2a1" class="block cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-2xl font-bold">죄송합니다</label></div>
-                        <div class="quiz-option"><input type="radio" name="q2" value="안녕히 가세요" id="q2a2" class="hidden"><label for="q2a2" class="block cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-2xl font-bold">안녕히 가세요</label></div>
-                        <div class="quiz-option"><input type="radio" name="q2" value="감사합니다" id="q2a3" class="hidden"><label for="q2a3" class="block cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-2xl font-bold">감사합니다</label></div>
+                    <div class="space-y-2 sm:space-y-4">
+                        <div class="quiz-option"><input type="radio" name="q2" value="죄송합니다" id="q2a1" class="hidden"><label for="q2a1" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">죄송합니다</label></div>
+                        <div class="quiz-option"><input type="radio" name="q2" value="안녕히 가세요" id="q2a2" class="hidden"><label for="q2a2" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">안녕히 가세요</label></div>
+                        <div class="quiz-option"><input type="radio" name="q2" value="감사합니다" id="q2a3" class="hidden"><label for="q2a3" class="block cursor-pointer p-2 sm:p-4 border-2 border-slate-200 rounded-lg text-lg sm:text-2xl font-bold">감사합니다</label></div>
                     </div>
-                    <div class="feedback-message text-xl"></div>
-                    <button type="submit" class="w-full mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600 transition-colors">Vérifier</button>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 transition-colors text-sm sm:text-base">Vérifier</button>
                 </form>
             </div>
 
             <!-- Page 8: Quiz 3 (Ordering) -->
             <div id="page-8" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en cliquant sur les cartes.</h2>
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en cliquant sur les cartes.</h2>
                 <form id="quiz-3" class="w-full max-w-lg">
-                    <div id="q3-answer-box" class="order-answer-box w-full p-4 mb-4 rounded-lg flex items-center justify-center gap-2"></div>
+                    <div id="q3-answer-box" class="order-answer-box w-full p-2 sm:p-4 mb-4 rounded-lg flex items-center justify-center gap-2"></div>
                     <div class="flex justify-center items-center gap-2">
-                        <div id="q3-options" class="flex justify-center items-center flex-wrap gap-3">
+                        <div id="q3-options" class="flex justify-center items-center flex-wrap gap-2 sm:gap-3">
                             <!-- Options will be injected by JS -->
                         </div>
-                        <button type="button" data-quiz-id="3" class="backspace-btn text-2xl bg-slate-300 text-slate-700 font-bold p-3 rounded-lg hover:bg-slate-400">←</button>
+                        <button type="button" data-quiz-id="3" class="backspace-btn text-lg sm:text-2xl bg-slate-300 text-slate-700 font-bold p-2 sm:p-3 rounded-lg hover:bg-slate-400">←</button>
                     </div>
-                    <div class="feedback-message text-xl"></div>
-                    <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                 </form>
             </div>
             
             <!-- Page 9: Quiz 4 (Ordering Review) -->
             <div id="page-9" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="restez-bien" class="text-sky-600 font-bold hover:underline">"Restez bien"</button> en ordonnant les syllabes.</h2>
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="restez-bien" class="text-sky-600 font-bold hover:underline">"Restez bien"</button> en ordonnant les syllabes.</h2>
                 <form id="quiz-4" class="w-full max-w-2xl">
-                    <div id="q4-answer-box" class="order-answer-box w-full p-4 mb-4 rounded-lg flex items-center justify-center gap-2 text-3xl"></div>
+                    <div id="q4-answer-box" class="order-answer-box w-full p-2 sm:p-4 mb-4 rounded-lg flex items-center justify-center gap-2 text-lg sm:text-3xl"></div>
                     <div class="flex justify-center items-center gap-2">
                         <div id="q4-options" class="flex justify-center items-center flex-wrap gap-2">
                             <!-- Options will be injected by JS -->
                         </div>
-                        <button type="button" data-quiz-id="4" class="backspace-btn text-2xl bg-slate-300 text-slate-700 font-bold p-3 rounded-lg hover:bg-slate-400">←</button>
+                        <button type="button" data-quiz-id="4" class="backspace-btn text-lg sm:text-2xl bg-slate-300 text-slate-700 font-bold p-2 sm:p-3 rounded-lg hover:bg-slate-400">←</button>
                     </div>
-                    <div class="feedback-message text-xl"></div>
-                    <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                 </form>
             </div>
 
             <!-- Page 10: Quiz 5 (Ordering Review) -->
             <div id="page-10" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="desole" class="text-sky-600 font-bold hover:underline">"Désolé"</button> en ordonnant les syllabes.</h2>
+                <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Formez <button data-audio="desole" class="text-sky-600 font-bold hover:underline">"Désolé"</button> en ordonnant les syllabes.</h2>
                 <form id="quiz-5" class="w-full max-w-2xl">
-                    <div id="q5-answer-box" class="order-answer-box w-full p-4 mb-4 rounded-lg flex items-center justify-center gap-2 text-3xl"></div>
+                    <div id="q5-answer-box" class="order-answer-box w-full p-2 sm:p-4 mb-4 rounded-lg flex items-center justify-center gap-2 text-lg sm:text-3xl"></div>
                     <div class="flex justify-center items-center gap-2">
                         <div id="q5-options" class="flex justify-center items-center flex-wrap gap-2">
                             <!-- Options will be injected by JS -->
                         </div>
-                        <button type="button" data-quiz-id="5" class="backspace-btn text-2xl bg-slate-300 text-slate-700 font-bold p-3 rounded-lg hover:bg-slate-400">←</button>
+                        <button type="button" data-quiz-id="5" class="backspace-btn text-lg sm:text-2xl bg-slate-300 text-slate-700 font-bold p-2 sm:p-3 rounded-lg hover:bg-slate-400">←</button>
                     </div>
-                    <div class="feedback-message text-xl"></div>
-                    <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                    <div class="feedback-message text-base sm:text-xl"></div>
+                    <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                 </form>
             </div>
             
             <!-- Page 11: Keyboard Quiz (Review) -->
             <div id="page-11" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-6" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en utilisant le clavier coréen.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="merci" class="text-sky-600 font-bold hover:underline">"Merci"</button> en utilisant le clavier coréen.</h2>
                      <div class="quiz-input-container">
                          <button type="button" data-audio="merci" class="audio-hint-btn">
-                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                             <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                          </button>
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="6" style="min-width: 15rem;"></span>
+                             <span class="quiz-input" data-quiz-id="6" style="min-width: 10rem; sm:min-width: 15rem;"></span>
                          </div>
                      </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="6"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="6"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 12: Keyboard Quiz -->
             <div id="page-12" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-7" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="partez-bien" class="text-sky-600 font-bold hover:underline">"Partez bien"</button> en utilisant le clavier coréen.</h2>
                      <div class="quiz-input-container">
                          <button type="button" data-audio="partez-bien" class="audio-hint-btn">
-                              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                              <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                          </button>
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="7" style="min-width: 15rem;"></span>
+                             <span class="quiz-input" data-quiz-id="7" style="min-width: 10rem; sm:min-width: 15rem;"></span>
                          </div>
                      </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="7"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="7"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 13: Keyboard Quiz -->
             <div id="page-13" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-8" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bonjour" class="text-sky-600 font-bold hover:underline">"Bonjour"</button> en utilisant le clavier coréen.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bonjour" class="text-sky-600 font-bold hover:underline">"Bonjour"</button> en utilisant le clavier coréen.</h2>
                       <div class="quiz-input-container">
                          <button type="button" data-audio="bonjour" class="audio-hint-btn">
-                              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                              <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                          </button>
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="8" style="min-width: 15rem;"></span>
+                             <span class="quiz-input" data-quiz-id="8" style="min-width: 10rem; sm:min-width: 15rem;"></span>
                          </div>
                      </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="8"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="8"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 14: Keyboard Quiz -->
             <div id="page-14" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-9" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en utilisant le clavier coréen.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en utilisant le clavier coréen.</h2>
                       <div class="quiz-input-container">
                          <button type="button" data-audio="bienvenue" class="audio-hint-btn">
-                              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                              <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                          </button>
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="9" style="min-width: 6rem;"></span><span class="prefilled-text"> 오세요</span>
+                             <span class="quiz-input" data-quiz-id="9" style="min-width: 6rem; sm:min-width: 9rem;"></span><span class="prefilled-text"> 오세요</span>
                          </div>
                      </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="9"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="9"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 15: Keyboard Quiz -->
             <div id="page-15" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-10" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en utilisant le clavier coréen.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en utilisant le clavier coréen.</h2>
                       <div class="quiz-input-container">
                          <button type="button" data-audio="bienvenue" class="audio-hint-btn">
-                              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                              <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                          </button>
                          <div class="quiz-input-wrapper">
                              <span class="prefilled-text">어서 </span><span class="quiz-input" data-quiz-id="10" style="min-width: 9rem;"></span>
                          </div>
                      </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="10"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="10"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 16: Keyboard Quiz -->
             <div id="page-16" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-11" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en utilisant le clavier coréen.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez <button data-audio="bienvenue" class="text-sky-600 font-bold hover:underline">"Bienvenue"</button> en utilisant le clavier coréen.</h2>
                       <div class="quiz-input-container">
                          <button type="button" data-audio="bienvenue" class="audio-hint-btn">
-                              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                              <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                          </button>
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="11" style="min-width: 15rem;"></span>
+                             <span class="quiz-input" data-quiz-id="11" style="min-width: 10rem; sm:min-width: 15rem;"></span>
                          </div>
                      </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="11"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                     <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="11"></div>
+                     <div class="feedback-message text-base sm:text-xl"></div>
+                     <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 17: Final Keyboard Quiz -->
             <div id="page-17" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-12" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez "Bonjour, bienvenue." en utilisant le clavier.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Bonjour, bienvenue." en utilisant le clavier.</h2>
                       <div class="quiz-input-container">
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="12" style="min-width: 15rem;"></span>
+                             <span class="quiz-input" data-quiz-id="12" style="min-width: 12rem; sm:min-width: 15rem;"></span>
                          </div>
-                     </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="12"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                      </div>
+                      <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="12"></div>
+                      <div class="feedback-message text-base sm:text-xl"></div>
+                      <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 18: Final Keyboard Quiz 2 -->
             <div id="page-18" class="page w-full h-full flex-col justify-center items-center">
                  <form id="quiz-13" class="w-full max-w-xl flex flex-col items-center">
-                     <h2 class="text-2xl font-semibold text-slate-800 mb-4">Écrivez "Merci, partez bien." en utilisant le clavier.</h2>
+                     <h2 class="text-base sm:text-xl lg:text-2xl font-semibold text-slate-800 mb-4">Écrivez "Merci, partez bien." en utilisant le clavier.</h2>
                       <div class="quiz-input-container">
                          <div class="quiz-input-wrapper">
-                             <span class="quiz-input" data-quiz-id="13" style="min-width: 15rem;"></span>
+                             <span class="quiz-input" data-quiz-id="13" style="min-width: 12rem; sm:min-width: 15rem;"></span>
                          </div>
-                     </div>
-                     <div class="keyboard-container mt-4" data-quiz-id="13"></div>
-                     <div class="feedback-message text-xl"></div>
-                     <button type="submit" class="mt-4 bg-sky-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-sky-600">Vérifier</button>
+                      </div>
+                      <div class="keyboard-container mt-2 sm:mt-4" data-quiz-id="13"></div>
+                      <div class="feedback-message text-base sm:text-xl"></div>
+                      <button type="submit" class="w-full sm:w-auto mt-2 sm:mt-4 bg-sky-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg hover:bg-sky-600 text-sm sm:text-base">Vérifier</button>
                  </form>
             </div>
             <!-- Page 19: End -->
             <div id="page-19" class="page w-full h-full flex-col justify-center items-center">
-                <h2 class="text-4xl font-bold text-slate-800">수고하셨습니다!</h2>
-                <p class="text-xl text-slate-600 mt-4">Félicitations ! Vous avez appris à souhaiter la bienvenue !</p>
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800">수고하셨습니다!</h2>
+                <p class="text-base sm:text-lg lg:text-xl text-slate-600 mt-2 sm:mt-4">Félicitations ! Vous avez appris à souhaiter la bienvenue !</p>
             </div>
         </div>
 
         <!-- Navigation -->
-        <div id="navigation-bar" class="absolute bottom-8 left-0 right-0 px-8 flex items-center justify-center">
-            <!-- Left button -->
-            <div class="absolute left-8">
-                <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-2 px-5 rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
-            </div>
-            <!-- Progress Bar -->
-            <div class="w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div id="navigation-bar" class="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-0 right-0 px-4 sm:px-8 flex justify-between items-center">
+            <button id="prev-btn" class="bg-slate-200 text-slate-600 font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-slate-300 transition-colors">Précédent</button>
+            <div class="flex-grow sm:flex-grow-0 sm:w-1/2 h-2 bg-slate-200 rounded-full overflow-hidden mx-2">
                 <div id="progress-indicator" class="h-full bg-sky-500 transition-all duration-300"></div>
             </div>
-            <!-- Right buttons -->
-            <div class="absolute right-8">
-                <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-2 px-5 rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
-                <button id="next-btn" class="bg-sky-500 text-white font-bold py-2 px-5 rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
+            <div class="flex gap-2">
+                <button id="retry-btn" class="hidden bg-amber-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-amber-600 transition-colors">Réessayer</button>
+                <button id="next-btn" class="bg-sky-500 text-white font-bold py-1.5 px-3 text-sm sm:py-2 sm:px-5 sm:text-base rounded-lg hover:bg-sky-600 transition-colors">Suivant</button>
             </div>
         </div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Layout Scaling ---
-        const courseContainer = document.getElementById('course-container');
-        const scaleLayout = () => {
-            const containerWidth = 1000;
-            const containerHeight = 600;
-            const padding = 20;
-            const availableWidth = window.innerWidth - padding;
-            const availableHeight = window.innerHeight - padding;
-            const scale = Math.min(availableWidth / containerWidth, availableHeight / containerHeight);
-            courseContainer.style.transform = `scale(${scale})`;
-        };
-        window.addEventListener('resize', scaleLayout);
-        scaleLayout();
-
         // --- Basic Setup ---
-        const totalPages = 20;
+        const totalPages = 20; // 0-19
         let currentPageIndex = 0;
         let soundsReady = false;
 
@@ -549,11 +522,13 @@
             '안': 'an', '녕': 'nyeong', '히': 'hi', '계': 'gye', '세': 'se', '요': 'yo',
             '죄송합니다': 'joesonghamnida', '죄송': 'joesong', '합니다': 'hamnida', '죄': 'joe', '송': 'song', '합': 'hap', '니': 'ni', '다': 'da',
             '안녕하세요': 'annyeonghaseyo', '하세요': 'haseyo', '해요': 'haeyo', '해': 'hae', '하':'ha',
-            '감사합니다': 'gamsahamnida', '감사': 'gamsa', '감': 'gam', '사': 'sa'
+            '감사합니다': 'gamsahamnida', '감사': 'gamsa', '감': 'gam', '사': 'sa',
+            // Audio hints
+            'merci': 'gamsahamnida', 'bonjour': 'annyeonghaseyo', 'bienvenue': 'eoseo-oseyo', 'partez-bien': 'annyeonghi-gaseyo'
         };
         const playAudio = (id) => {
             const audio = document.getElementById(`audio-${id}`);
-            if (audio && audio.src && !audio.src.endsWith(window.location.pathname)) { // Check if src is not empty and not just the base URL
+            if (audio && audio.src && !audio.src.endsWith(window.location.pathname)) { 
                 audio.currentTime = 0;
                 audio.play().catch(e => console.error("Audio play failed:", e));
             }
@@ -572,19 +547,14 @@
             updateNavigation(index);
             updateProgressBar(index);
             
-            // MODIFIED (Request 2): Send postMessage on last page
+            // Play finish sound on last page
             if (index === totalPages - 1) {
                 if (soundsReady) {
                     finishSound.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '0.5s');
                 }
-                // Send message to parent window
-                if (parent) {
-                    parent.postMessage('lessonCompleted', '*');
-                }
             }
         };
         
-        // MODIFIED (Request 3): Update navigation logic
         const updateNavigation = (index) => {
             prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
             const currentPage = pages[index];
@@ -594,21 +564,18 @@
             retryBtn.classList.add('hidden'); // Always hide retry btn on page load
 
             // Handle Next Button Visibility
-            // Only hide on the very last page
             if (index === totalPages - 1) {
-                nextBtn.style.visibility = 'hidden';
+                nextBtn.classList.add('hidden');
             } else {
+                nextBtn.classList.remove('hidden');
                 nextBtn.style.visibility = 'visible';
             }
             
             // Handle Next Button Disabled State
-            // Disable if it's an unanswered quiz page
             if (isQuizPage && !isQuizAnswered) {
-                nextBtn.disabled = true;
-                nextBtn.classList.add('btn-disabled');
+                nextBtn.classList.add('hidden');
             } else {
-                nextBtn.disabled = false;
-                nextBtn.classList.remove('btn-disabled');
+                nextBtn.classList.remove('hidden');
             }
         };
 
@@ -618,16 +585,23 @@
         
         // --- Navigation Events ---
         nextBtn.addEventListener('click', async () => {
-            // MODIFIED (Request 3): Do not advance if disabled
-            if (nextBtn.disabled) return; 
-
             await initAudio();
+            
+            // Send postMessage when clicking next on the 2nd to last page (transitioning to completion page)
+            // Page 18 (index 18) -> Page 19 (index 19, completion)
+            if (currentPageIndex === totalPages - 2) {
+                if (parent) {
+                   parent.postMessage('lessonCompleted', '*');
+                }
+            }
+
             if (currentPageIndex < totalPages - 1) {
                 currentPageIndex++;
                 if (soundsReady) pageTurnSound.triggerAttackRelease('A5', '0.05s');
                 showPage(currentPageIndex);
             }
         });
+        
         prevBtn.addEventListener('click', async () => {
             await initAudio();
             if (currentPageIndex > 0) {
@@ -666,7 +640,7 @@
                 resetState();
             };
             const addChar = (char) => {
-                if (char === ' ' || char === ',') {
+                if (char === ' ' || char === ',' || char === '.' || char === '!' || char === '?') {
                     flush();
                     buffer += char;
                     return;
@@ -674,7 +648,7 @@
                 if (isVowel(char)) {
                     if (cho === null) { flush(); cho = 'ㅇ'; jung = char; } 
                     else if (jung === null) { jung = char; } 
-                    else if (JUNG_PAIRS[jung + char]) { jung = JUNG_PAIRS[jung + char]; } 
+                    else if (JUNG_PAIRS[jung + char] && jong === null) { jung = JUNG_PAIRS[jung + char]; } 
                     else if (jong === null) { flush(); cho = 'ㅇ'; jung = char; } 
                     else {
                         const lastJong = jong;
@@ -708,7 +682,10 @@
                         if (jong !== null) {
                             const decomposed = JONG_DECOMPOSE[jong];
                             jong = decomposed ? decomposed[0] : null;
-                        } else if (jung !== null) jung = null;
+                        } else if (jung !== null) {
+                             const jungDecomposed = Object.keys(JUNG_PAIRS).find(key => JUNG_PAIRS[key] === jung);
+                             jung = jungDecomposed ? jungDecomposed[0] : null;
+                        }
                         else if (cho !== null) cho = null;
                         else if (buffer.length > 0) { 
                             flush();
@@ -775,7 +752,10 @@
                     const commaBtn = document.createElement('button');
                     Object.assign(commaBtn, { type: 'button', className: 'key', textContent: ','});
                     commaBtn.dataset.char = ',';
-                    bottomRow.append(shiftBtn, spaceBtn, commaBtn, backspaceBtn);
+                    const dotBtn = document.createElement('button');
+                    Object.assign(dotBtn, { type: 'button', className: 'key', textContent: '.'});
+                    dotBtn.dataset.char = '.';
+                    bottomRow.append(shiftBtn, spaceBtn, commaBtn, dotBtn, backspaceBtn);
                 } else {
                     bottomRow.append(shiftBtn, spaceBtn, backspaceBtn);
                 }
@@ -786,7 +766,7 @@
                 const keyEl = e.target.closest('.key');
                 if (keyEl && keyEl.dataset.char) {
                     onKey(keyEl.dataset.char);
-                    if (isShifted) {
+                    if (isShifted && !e.target.closest('[textContent="Shift"]')) {
                         isShifted = false;
                         render();
                     }
@@ -822,7 +802,6 @@
             if (!form) return;
             
             const page = form.closest('.page');
-            // ADDED (Request 3): Ensure quiz state is marked as unanswered
             page.dataset.answered = 'false'; 
             
             const feedbackEl = form.querySelector('.feedback-message');
@@ -843,19 +822,27 @@
                 shuffleArray([...quizInfo.options]).forEach((optionText, index) => {
                     const optionCard = document.createElement('button');
                     optionCard.type = 'button';
-                    optionCard.className = 'interactive-card order-option-card';
+                    // Use responsive classes
+                    if (quizInfo.id === 'quiz-4' || quizInfo.id === 'quiz-5') {
+                        optionCard.className = 'interactive-card order-option-card p-1.5 sm:p-3 text-base sm:text-2xl';
+                    } else {
+                        optionCard.className = 'interactive-card order-option-card p-2 sm:p-4 text-base sm:text-2xl';
+                    }
                     optionCard.textContent = optionText;
                     optionCard.dataset.optionIndex = index;
-
-                    if (quizInfo.id === 'quiz-3') { optionCard.style.fontSize = '1.8rem'; optionCard.style.padding = '0.8rem'; }
                     
                     optionCard.onclick = () => {
                         const audioId = hangulToAudioId[optionText];
                         if (audioId) playAudio(audioId);
                         quizStates[quizInfo.id].userAnswer.push({text: optionText, index: index});
                         optionCard.classList.add('hidden');
+                        
                         const answerCard = document.createElement('span');
-                        answerCard.className = 'order-answer-card';
+                        if (quizInfo.id === 'quiz-4' || quizInfo.id === 'quiz-5') {
+                            answerCard.className = 'order-answer-card p-1.5 sm:p-3 text-base sm:text-2xl';
+                        } else {
+                            answerCard.className = 'order-answer-card p-2 sm:p-4 text-base sm:text-2xl';
+                        }
                         answerCard.textContent = optionText;
                         answerBox.appendChild(answerCard);
                     };
@@ -872,36 +859,29 @@
                 };
 
                 createKeyboard(kbdContainer, handleKey, quizInfo.id === 'quiz-12' || quizInfo.id === 'quiz-13');
+            } else if (quizInfo.type === 'radio') {
+                form.reset();
             }
         };
 
-        // MODIFIED (Request 3): Update reset logic
         const resetQuiz = (quizId) => {
             const form = document.getElementById(quizId);
             if (!form) return;
 
-            // ADDED: Mark page as unanswered *before* calling updateNavigation
             const page = form.closest('.page');
             if (page) page.dataset.answered = 'false';
 
             form.querySelector('.feedback-message').innerHTML = '';
             form.querySelector('button[type=submit]').classList.remove('hidden');
             retryBtn.classList.add('hidden');
-            
-            // MODIFIED: Don't hide nextBtn, just call updateNavigation
-            // This will see the quiz is unanswered and disable it.
-            updateNavigation(currentPageIndex);
+            nextBtn.classList.add('hidden');
             
             const quizInfo = quizzes.find(q => q.id === quizId);
             if (quizInfo.type === 'radio') form.reset();
             else if (quizInfo.type === 'order') {
-                const qNum = quizId.match(/\d+/)[0];
-                document.getElementById(`q${qNum}-answer-box`).innerHTML = '';
-                document.querySelectorAll(`#q${qNum}-options .order-option-card`).forEach(c => c.classList.remove('hidden'));
-                quizStates[quizId].userAnswer = [];
+                initQuiz(quizInfo); 
             } else if (quizInfo.type === 'keyboard') {
-                form.querySelector(`.quiz-input`).textContent = '';
-                quizStates[quizId].hangulComposer.reset();
+                initQuiz(quizInfo);
             }
         };
         
@@ -943,6 +923,8 @@
                     isCorrect = joinedAnswer === answerString;
                 } else { // keyboard
                     let finalAnswer = state.hangulComposer.getFinal().trim();
+                    form.querySelector('.quiz-input').textContent = finalAnswer;
+
                     if(quizInfo.ignorePunctuation) {
                         const normalize = str => str.replace(/[,\.!\s]/g, '');
                         finalAnswer = normalize(finalAnswer);
@@ -960,20 +942,15 @@
                 if (isCorrect) {
                     if (soundsReady) correctSound.triggerAttackRelease('C5', '0.2s');
                     feedbackEl.textContent = 'Correct !';
-                    feedbackEl.className = 'feedback-message text-xl text-green-500';
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
                     form.closest('.page').dataset.answered = 'true';
-                    updateNavigation(currentPageIndex); // This will re-enable the next button
+                    updateNavigation(currentPageIndex); 
                 } else {
                     if (soundsReady) wrongSound.triggerAttackRelease('A#2', '0.2s');
                     feedbackEl.textContent = 'Ce n\'est pas correct.';
-                    feedbackEl.className = 'feedback-message text-xl text-red-500';
+                    feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
                     retryBtn.classList.remove('hidden');
-                    
-                    // MODIFIED (Request 3): Don't hide nextBtn
-                    // Ensure it remains visible but disabled
-                    nextBtn.style.visibility = 'visible';
-                    nextBtn.disabled = true;
-                    nextBtn.classList.add('btn-disabled');
+                    nextBtn.classList.add('hidden');
                 }
             });
         });
@@ -996,7 +973,8 @@
             const kbdContainer = currentPage.querySelector('.keyboard-container');
             if (!kbdContainer) return;
             
-            e.preventDefault(); 
+            // Allow default browser actions for some keys
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
 
             const quizIdNum = kbdContainer.dataset.quizId;
             const quizId = `quiz-${quizIdNum}`;
@@ -1008,10 +986,13 @@
             let char;
             if (e.key === 'Backspace') {
                 char = 'backspace';
-            } else if (e.key === ' ' || e.key === ',') {
+                e.preventDefault();
+            } else if (e.key === ' ' || e.key === ',' || e.key === '.' || e.key === '!' || e.key === '?') {
                 char = e.key;
-            } else {
+                e.preventDefault();
+            } else if (keyToHangulMap[e.key]) {
                 char = keyToHangulMap[e.key];
+                e.preventDefault();
             }
             
             if (char) {
@@ -1022,7 +1003,7 @@
         // --- Initialisation ---
         showPage(currentPageIndex);
         document.body.addEventListener('click', initAudio, { once: true });
-        document.body.addEventListener('touchend', initAudio, { once: true }); // Also init on touch
+        document.body.addEventListener('touchend', initAudio, { once: true });
     });
     </script>
 </body>
