@@ -569,12 +569,14 @@
             const isQuizPage = currentPage.querySelector('form') !== null;
             const isQuizAnswered = currentPage.dataset.answered === 'true';
 
-            retryBtn.classList.add('hidden'); // Retry button still toggles display (hidden class)
+            // Always hide Retry button initially when navigating
+            retryBtn.classList.add('hidden'); 
 
             // Handle Next Button Visibility
             if (index === totalPages - 1) {
                 nextBtn.style.visibility = 'hidden';
             } else {
+                nextBtn.classList.remove('hidden'); // Ensure it's not display:none
                 nextBtn.style.visibility = 'visible';
             }
             
@@ -798,8 +800,8 @@
             { id: 'quiz-9', pageIndex: 14, type: 'keyboard', answer: '어서' },
             { id: 'quiz-10', pageIndex: 15, type: 'keyboard', answer: '오세요' },
             { id: 'quiz-11', pageIndex: 16, type: 'keyboard', answer: '어서 오세요' },
-            { id: 'quiz-12', pageIndex: 17, type: 'keyboard', answer: '안녕하세요,어서 오세요', ignorePunctuation: true },
-            { id: 'quiz-13', pageIndex: 18, type: 'keyboard', answer: '감사합니다,안녕히 가세요', ignorePunctuation: true }
+            { id: 'quiz-12', pageIndex: 17, type: 'keyboard', answer: '안녕하세요,어서 오세요' },
+            { id: 'quiz-13', pageIndex: 18, type: 'keyboard', answer: '감사합니다,안녕히 가세요' }
         ];
 
         let quizStates = {};
@@ -910,6 +912,9 @@
             });
         });
 
+        // 1) Helper function to ignore spaces and punctuation
+        const normalize = (str) => str.replace(/[\s,.!?;:"]/g, '');
+
         quizzes.forEach(quizInfo => {
             const page = document.getElementById(quizInfo.id)?.closest('.page');
             if(page) initQuiz(quizInfo);
@@ -936,15 +941,12 @@
                     let finalAnswer = state.hangulComposer.getFinal().trim();
                     form.querySelector('.quiz-input').textContent = finalAnswer;
 
-                    if(quizInfo.ignorePunctuation) {
-                        const normalize = str => str.replace(/[,\.!\s]/g, '');
-                        finalAnswer = normalize(finalAnswer);
-                        const correctAnswer = normalize(quizInfo.answer);
-                        const altCorrectAnswer = quizInfo.altAnswer ? normalize(quizInfo.altAnswer) : null;
-                        isCorrect = (finalAnswer === correctAnswer) || (altCorrectAnswer && finalAnswer === altCorrectAnswer);
-                    } else {
-                        isCorrect = (finalAnswer === quizInfo.answer) || (quizInfo.altAnswer && finalAnswer === quizInfo.altAnswer);
-                    }
+                    // 2) Apply normalization to ALL keyboard inputs
+                    const normalizedFinal = normalize(finalAnswer);
+                    const normalizedCorrect = normalize(quizInfo.answer);
+                    const normalizedAlt = quizInfo.altAnswer ? normalize(quizInfo.altAnswer) : null;
+
+                    isCorrect = (normalizedFinal === normalizedCorrect) || (normalizedAlt && normalizedFinal === normalizedAlt);
                 }
 
                 const feedbackEl = form.querySelector('.feedback-message');
@@ -955,13 +957,19 @@
                     feedbackEl.textContent = 'Correct !';
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-green-500';
                     form.closest('.page').dataset.answered = 'true';
+                    
+                    // Correct answer: Show Next, Hide Retry
+                    retryBtn.classList.add('hidden');
+                    nextBtn.classList.remove('hidden'); // Ensure display is flex/block
                     updateNavigation(currentPageIndex); 
                 } else {
                     if (soundsReady) wrongSound.triggerAttackRelease('A#2', '0.2s');
                     feedbackEl.textContent = 'Ce n\'est pas correct.';
                     feedbackEl.className = 'feedback-message text-base sm:text-xl text-red-500';
+                    
+                    // Incorrect answer: Show Retry, Completely Hide Next (display:none) to allow overlap position
                     retryBtn.classList.remove('hidden');
-                    nextBtn.style.visibility = 'hidden';
+                    nextBtn.classList.add('hidden'); 
                 }
             });
         });
