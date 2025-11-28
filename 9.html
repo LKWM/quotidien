@@ -642,16 +642,21 @@
         
         // --- Navigation Events ---
         nextBtn.addEventListener('click', async () => {
+            // MODIFIED (Request 3): Do not advance if disabled
+            if (nextBtn.disabled) return; 
+
             await initAudio();
             
-            // Send postMessage when clicking next on the 2nd to last page
-            if (currentPageIndex === totalPages - 2) {
-                if (window.parent) {
-                    window.parent.postMessage('lessonCompleted', '*');
-                }
-            }
-
+            // Check if we can move to the next page
             if (currentPageIndex < totalPages - 1) {
+                // If we are on the second to last page (about to move to the last page)
+                if (currentPageIndex === totalPages - 2) {
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'lesson_complete' }, '*');
+                        console.log('Lesson complete message sent.');
+                    }
+                }
+
                 currentPageIndex++;
                 if (soundsReady) pageTurnSound.triggerAttackRelease('A5', '0.05s');
                 showPage(currentPageIndex);
