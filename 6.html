@@ -618,7 +618,7 @@
                 // [요청 사항] 부모 페이지에 완료 메시지 전송
                 // MODIFIED (Request 2): Changed message to a simple string
                 if (window.parent) {
-                    window.parent.postMessage('lessonCompleted', '*');
+                    window.parent.postMessage({ type: 'lesson_complete' }, '*');
                 }
                 console.log('Lesson complete message sent to parent.');
 
