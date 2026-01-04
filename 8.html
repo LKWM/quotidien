@@ -590,7 +590,7 @@
             // Send postMessage when clicking next on the 2nd to last page
             if (currentPageIndex === totalPages - 2) {
                 if (parent) {
-                    parent.postMessage('lessonCompleted', '*');
+                    window.parent.postMessage({ type: 'lesson_complete' }, '*');
                 }
             }
 
