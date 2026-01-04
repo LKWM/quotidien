@@ -466,7 +466,7 @@
                 }
                  // Send message to parent window
                 if (parent) {
-                    parent.postMessage('lessonCompleted', '*');
+                    window.parent.postMessage({ type: 'lesson_complete' }, '*');
                 }
             }
         };
